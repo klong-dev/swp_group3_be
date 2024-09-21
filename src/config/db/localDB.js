@@ -6,7 +6,7 @@ const sequelize = new Sequelize({
   host: "localhost",
   username: "root",
   password: "",
-  database: "swp_preview",
+  database: "swp",
 });
 
 async function connect() {
