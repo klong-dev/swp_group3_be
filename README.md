@@ -75,4 +75,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## **Contact**
 
-For any questions or inquiries, please reach out via [your email] or create an issue in this repository.
+For any questions or inquiries, please reach out via **longhk.dev@gmail.com** or create an issue in this repository.
