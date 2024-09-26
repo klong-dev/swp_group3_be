@@ -18,14 +18,14 @@ passport.use(new GoogleStrategy({
       if (existingStudent) {
         return done(null, existingStudent);
       }
-      if (profile._json.hd === 'fpt.edu.vn') {
+      // if (profile._json.hd === 'fpt.edu.vn') {
         const newStudent = await Student.create({
           studentID: profile.id,
           email: profile.emails[0].value,
           name: profile.displayName,
         });
         done(null, newStudent);
-      }
+      // }
     } catch (err) {
       done(err, null);
     }
