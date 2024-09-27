@@ -2,29 +2,37 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const Mentor = sequelize.define('mentor', {
+const MentorSchedule = sequelize.define('mentor_schedule', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  accountID: {
-    type: DataTypes.STRING,
+  schedule_start: {
+    type: DataTypes.DATE,
     allowNull: false
   },
-  full_name: {
-    type: DataTypes.STRING,
+  schedule_end: {
+    type: DataTypes.DATE,
     allowNull: false
   },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  point: {
+  skill_id: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: false
   },
-  image_path: {
+  cost: {
+    type: DataTypes.FLOAT,
+    allowNull: false
+  },
+  mentor_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  max_size: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  description: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -34,4 +42,4 @@ const Mentor = sequelize.define('mentor', {
   },
 });
 
-module.exports = Mentor;
+module.exports = MentorSchedule;

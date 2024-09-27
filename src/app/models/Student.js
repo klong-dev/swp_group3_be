@@ -1,13 +1,17 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/localDB");
+const db = require("../../config/db/index");
 const sequelize = db.sequelize;
 const Student = sequelize.define('student', {
-  studentID: {
-    type: DataTypes.STRING,
+  id: {
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    // autoIncrement: true
+    autoIncrement: true
   },
-  name: {
+  accountID: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  full_name: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -15,15 +19,19 @@ const Student = sequelize.define('student', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  groupID: {
+  point: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  img_path: {
     type: DataTypes.STRING,
     allowNull: true
   },
-},
-  {
-    timestamps: true, 
-  }
-);
+  status: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+});
 
 
 module.exports = Student;

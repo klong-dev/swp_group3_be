@@ -2,23 +2,23 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const Group = sequelize.define('group', {
-  id: {
+const StudentGroup = sequelize.define('student_group', {
+  group_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true
   },
-  mentor_id: {
+  student_id: {
     type: DataTypes.INTEGER,
+    primaryKey: true,
   },
-  size: {
+  role: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   status: {
     type: DataTypes.INTEGER,
+    allowNull: false
   },
-
 });
 
-module.exports = Group;
+module.exports = StudentGroup;
