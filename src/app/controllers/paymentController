@@ -1,0 +1,45 @@
+// Mock database
+let payments = [];
+
+// Get all payments
+exports.getAllPayments = (req, res) => {
+    res.json(payments);
+};
+
+// Get a single payment by ID
+exports.getPaymentById = (req, res) => {
+    const payment = payments.find(p => p.id === parseInt(req.params.id));
+    if (!payment) return res.status(404).send('Payment not found');
+    res.json(payment);
+};
+
+// Create a new payment
+exports.createPayment = (req, res) => {
+    const payment = {
+        id: payments.length + 1,
+        amount: req.body.amount,
+        method: req.body.method,
+        date: new Date()
+    };
+    payments.push(payment);
+    res.status(201).json(payment);
+};
+
+// Update an existing payment
+exports.updatePayment = (req, res) => {
+    const payment = payments.find(p => p.id === parseInt(req.params.id));
+    if (!payment) return res.status(404).send('Payment not found');
+
+    payment.amount = req.body.amount;
+    payment.method = req.body.method;
+    res.json(payment);
+};
+
+// Delete a payment
+exports.deletePayment = (req, res) => {
+    const paymentIndex = payments.findIndex(p => p.id === parseInt(req.params.id));
+    if (paymentIndex === -1) return res.status(404).send('Payment not found');
+
+    payments.splice(paymentIndex, 1);
+    res.status(204).send();
+};
