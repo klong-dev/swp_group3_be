@@ -1,32 +1,27 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../config/db/index");
 const sequelize = db.sequelize;
-const Student = sequelize.define(
-  "student",
+
+const Feedback = sequelize.define(
+  "feedback",
   {
-    id: {
+    mentor_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
+      allowNull: false,
       autoIncrement: true,
     },
-    account_id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    full_name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    point: {
+    student_id: {
       type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false,
+    },
+    text: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
-    img_path: {
-      type: DataTypes.STRING,
+    rating: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     status: {
@@ -35,9 +30,9 @@ const Student = sequelize.define(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
     freezeTableName: true,
   }
 );
 
-module.exports = Student;
+module.exports = Feedback;

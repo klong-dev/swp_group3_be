@@ -29,6 +29,7 @@ const MentorSlot = sequelize.define('mentorSlot', {
   },
 }, {
   timestamps: true,
+  freezeTableName:true
 });
 
 module.exports = MentorSlot;

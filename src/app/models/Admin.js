@@ -1,34 +1,32 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/localDB");
+const db = require('../../config/db/index')
 const sequelize = db.sequelize;
 
-const Topic = sequelize.define('topic', {
-  topicID: {
-    type: DataTypes.STRING,
+const Admin = sequelize.define('admin', {
+  id: {
+    type: DataTypes.INTEGER,
     primaryKey: true,
+    autoIncrement: true
   },
-  name: {
+  username: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  description: {
+  password: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  documentUrl: {
+  fullname: {
     type: DataTypes.STRING,
     allowNull: true
-  },
-  courseID: {
-    type: DataTypes.STRING,
-    allowNull: false
   },
   status: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: false
   },
-}, {
-  timestamps: true,
+},{
+  timestamps: false,
+  freezeTableName: true
 });
 
-module.exports = Topic;
+module.exports = Admin;

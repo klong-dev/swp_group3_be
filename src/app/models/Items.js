@@ -1,27 +1,20 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/index");
+const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const Mentor = sequelize.define("mentor", {
+const Item = sequelize.define('item', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
+    allowNull: false,
+    autoIncrement: true
   },
-  account_id: {
+  name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  full_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  point: {
-    type: DataTypes.INTEGER,
+  price: {
+    type: DataTypes.FLOAT,
     allowNull: true,
   },
   img_path: {
@@ -33,9 +26,8 @@ const Mentor = sequelize.define("mentor", {
     allowNull: false,
   },
 },{
-  timestamps : false,
+  timestamps: false,
   freezeTableName: true
-}
-);
+});
 
-module.exports = Mentor;
+module.exports = Item;

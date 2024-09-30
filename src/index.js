@@ -6,7 +6,7 @@ const cors = require('cors');
 
 require('dotenv').config();
 
-const db = require("./config/db/localDB");
+const db = require("./config/db/index");
 const app = express();
 
 app.use(cors());
