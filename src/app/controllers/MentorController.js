@@ -76,6 +76,23 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+  async loadProfile(req, res) {
+    try {
+      const { id } = req.query;
+      console.log(id);
+      const mentor = await Mentor.findOne({
+        where: {
+          id: id,
+        },
+      });
+      return res.json({ error_code: 0, mentor });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
+    }
+  }
   
 }
 
