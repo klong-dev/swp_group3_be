@@ -93,7 +93,32 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-  
+  async getListFeedback(req, res) {
+    try {
+      const { id } = req.query;
+      const feedbacks = await Feedback.findAll({
+        where: {
+          mentor_id: id,
+        },
+        order: [["createdAt", "DESC"]],
+      });
+      const averageRating =
+        feedbacks.length > 0
+          ? feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0) /
+            feedbacks.length
+          : 0;
+      return res.json({
+        error_code: 0,
+        feedbacks,
+        averageRating,
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
+    }
+  }
 }
 
 module.exports = new SearchController();
