@@ -119,6 +119,29 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+  async getSkills(req, res) {
+    try {
+      const { id } = req.query;
+      const mentorSkills = await MentorSkill.findAll({
+        where: {
+          mentor_id: id,
+        },
+      });
+      const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skill_id);
+
+      const skills = await Skill.findAll({
+        where: {
+          id: skillIds,
+        },
+      });
+      return res.json({ error_code: 0, skills });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
+    }
+  }
 }
 
 module.exports = new SearchController();
