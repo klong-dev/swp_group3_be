@@ -1,7 +1,7 @@
 // const { Sequelize, DataTypes } = require("sequelize");
 // require('dotenv').config();
 
-// // Initialize connection to the database
+// // Initialize connection to the database 
 // const sequelize = new Sequelize({
 //   dialect: "mysql",
 //   host: process.env.HOST,
@@ -20,8 +20,6 @@
 // }
 
 // module.exports = { sequelize, connect };
-
-
 const { Sequelize, DataTypes } = require("sequelize");
 
 // Khởi tạo kết nối đến cơ sở dữ liệu

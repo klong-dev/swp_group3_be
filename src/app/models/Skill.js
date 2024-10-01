@@ -20,6 +20,10 @@ const Skill = sequelize.define('skill', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+},
+{
+  timestamps: false,
+  freezeTableName: true
 });
 
 module.exports = Skill;

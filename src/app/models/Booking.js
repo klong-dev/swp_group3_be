@@ -2,32 +2,26 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const Item = sequelize.define('item', {
+const Booking = sequelize.define('booking', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    allowNull: false,
     autoIncrement: true
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  mentor_id: {
+    type: DataTypes.INTEGER,
   },
-  price: {
-    type: DataTypes.FLOAT,
-    allowNull: true,
-  },
-  img_path: {
-    type: DataTypes.STRING,
-    allowNull: true,
+  size: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   status: {
     type: DataTypes.INTEGER,
-    allowNull: false,
   },
+
 },{
   timestamps: false,
   freezeTableName: true
 });
 
-module.exports = Item;
+module.exports = Booking;

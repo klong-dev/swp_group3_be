@@ -22,10 +22,10 @@
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",
+    "passport-google-oauth2": "^0.2.0",
     "sequelize": "^6.37.3"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "passport-google-oauth20": "^2.0.0"
+    "cors": "^2.8.5"
   }
 }

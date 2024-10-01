@@ -1,37 +1,41 @@
 const { DataTypes } = require("sequelize");
-const db = require('../../config/db/index');
+const db = require("../../config/db/index");
 const sequelize = db.sequelize;
 
-const Mentor = sequelize.define('mentor', {
+const Mentor = sequelize.define("mentor", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
   },
   account_id: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   full_name: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   point: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: true,
   },
-  image_path: {
+  img_path: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
   },
   status: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
   },
-});
+},{
+  timestamps : false,
+  freezeTableName: true
+}
+);
 
 module.exports = Mentor;

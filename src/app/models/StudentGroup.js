@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const StudentGroup = sequelize.define('student_group', {
+const StudentGroup = sequelize.define('studentgroup', {
   group_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -19,6 +19,9 @@ const StudentGroup = sequelize.define('student_group', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+},{
+  timestamps: false,
+  freezeTableName: true
 });
 
 module.exports = StudentGroup;

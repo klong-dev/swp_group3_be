@@ -2,31 +2,31 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const MentorSkill = sequelize.define('mentorskill', {
+const Donate = sequelize.define('donate', {
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
+    primaryKey: true, 
     autoIncrement: true
-  },
-  level: {
-    type: DataTypes.INTEGER,
-    allowNull: true
   },
   mentor_id: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
   },
-  skill_id: {
+  student_id: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+  },
+  item_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
   status: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
   },
-},{
-  timestamps: false,
-  freezeTableName: true
+}, {
+  timestamps: true,
+  freezeTableName: true,
 });
 
-module.exports = MentorSkill;
+module.exports = Donate;
