@@ -72,8 +72,6 @@ class SearchController {
           };
         });
 
-        console.log(averageRatingsArray);
-
         const mentorsWithRatings = mentors.map((mentor) => {
           const ratingObject = averageRatingsArray.find(
             (rating) => rating.mentorId === mentor.id.toString()
@@ -92,8 +90,6 @@ class SearchController {
             averageRating: averageRating,
           };
         });
-
-        console.log(mentorsWithRatings);
         return res.json({
           error_code: 0,
           totalMentors: mentorsWithRatings.length,
@@ -155,7 +151,6 @@ class SearchController {
             averageRating: averageRating,
           };
         });
-        console.log(averageRatingsArray);
         const mentorsWithRatings = mentors.map((mentor) => {
           const ratingObject = averageRatingsArray.find(
             (rating) => rating.mentorId === mentor.id.toString()
@@ -174,7 +169,6 @@ class SearchController {
             averageRating: averageRating,
           };
         });
-        console.log(mentorsWithRatings);
         return res.json({
           error_code: 0,
           totalMentors: mentorsWithRatings.length,
@@ -212,7 +206,7 @@ class SearchController {
       const { id } = req.query;
       const feedbacks = await Feedback.findAll({
         where: {
-          mentor_id: id,
+          mentorId: id,
         },
         order: [["createdAt", "DESC"]],
       });
@@ -238,11 +232,10 @@ class SearchController {
       const { id } = req.query;
       const mentorSkills = await MentorSkill.findAll({
         where: {
-          mentor_id: id,
+          mentorId: id,
         },
       });
-      const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skill_id);
-
+      const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skillId);
       const skills = await Skill.findAll({
         where: {
           id: skillIds,
