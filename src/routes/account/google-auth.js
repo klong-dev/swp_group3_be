@@ -27,6 +27,6 @@ router.get('/callback',
       expiresIn: '7d',
     });
     return res.redirect(`${process.env.CLIENT_URL}/login?token=${token}`);
-});
+  });
 
 module.exports = router;

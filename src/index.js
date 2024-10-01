@@ -3,16 +3,26 @@ const path = require("path");
 const routes = require("./routes");
 const bodyParser = require("body-parser");
 const cors = require('cors');
+const passport = require('passport')
+const session = require('express-session');
 
 require('dotenv').config();
+require('./app/controllers/GoogleController')
 
 const db = require("./config/db/index");
 const app = express();
 
 app.use(cors());
-
+app.use(session({
+  secret: process.env.SESSION_SECRET_KEY,
+  resave: false,
+  saveUninitialized: true
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use(express.json());
 
@@ -23,10 +33,7 @@ db.connect();
 routes(app);
 
 
-// app.listen(process.env.PORT, () => {
-//   console.log(`Server is running at http://localhost:${process.env.PORT}`);
-// });
-
-app.listen(5000, () => {
-  console.log(`Server is running at http://localhost:5000`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running at http://localhost:${process.env.PORT}`);
 });
+

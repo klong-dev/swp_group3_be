@@ -15,7 +15,6 @@ passport.use(new GoogleStrategy({
       }
       // Check if user already exists in our db
       const existingStudent = await Student.findOne({ where: { accountId: profile.id } });
-      console.log(existingStudent)
       if (existingStudent) {
         return done(null, existingStudent);
       }
