@@ -20,6 +20,7 @@ const StudentGroup = sequelize.define('student_group', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 });
 
