@@ -12,7 +12,7 @@ const Skill = sequelize.define('skill', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  img_path: {
+  imgPath: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -20,9 +20,7 @@ const Skill = sequelize.define('skill', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-},
-{
-  timestamps: false,
+}, {
   freezeTableName: true
 });
 

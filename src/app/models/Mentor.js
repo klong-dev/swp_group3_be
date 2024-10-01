@@ -8,11 +8,11 @@ const Mentor = sequelize.define("mentor", {
     primaryKey: true,
     autoIncrement: true,
   },
-  account_id: {
+  accountId: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  full_name: {
+  fullName: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -24,7 +24,7 @@ const Mentor = sequelize.define("mentor", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  img_path: {
+  imagePath: {
     type: DataTypes.STRING,
     allowNull: true,
   },
@@ -32,10 +32,9 @@ const Mentor = sequelize.define("mentor", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-},{
-  timestamps : false,
+}, {
   freezeTableName: true
-}
-);
+
+});
 
 module.exports = Mentor;

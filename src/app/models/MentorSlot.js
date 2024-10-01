@@ -1,35 +1,48 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/localDB");
+const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const MentorSlot = sequelize.define('mentorSlot', {
-  mentorSlotID: {
-    type: DataTypes.STRING,
+const MentorSlot = sequelize.define('mentor_slot', {
+  id: {
+    type: DataTypes.INTEGER,
     primaryKey: true,
+    autoIncrement: true
   },
-  mentorID: {
-    type: DataTypes.STRING,
+  slotStart: {
+    type: DataTypes.DATE,
     allowNull: false
   },
-  startTime: {
-    type: DataTypes.TIME,
+  slotEnd: {
+    type: DataTypes.DATE,
     allowNull: false
   },
-  endTime: {
-    type: DataTypes.TIME,
+  skillId: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
-  unitSlot: {
-    type: DataTypes.TIME,
+  cost: {
+    type: DataTypes.FLOAT,
     allowNull: false
   },
-  mode: {
+  mentorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  size: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  description: {
     type: DataTypes.STRING,
     allowNull: true
   },
+  status: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
 }, {
-  timestamps: true,
-  freezeTableName:true
+  freezeTableName: true
+
 });
 
 module.exports = MentorSlot;

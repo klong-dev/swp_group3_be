@@ -16,7 +16,7 @@ const Admin = sequelize.define('admin', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  fullname: {
+  fullName: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -24,8 +24,7 @@ const Admin = sequelize.define('admin', {
     type: DataTypes.STRING,
     allowNull: false
   },
-},{
-  timestamps: false,
+}, {
   freezeTableName: true
 });
 

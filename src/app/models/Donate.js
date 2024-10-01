@@ -5,18 +5,18 @@ const sequelize = db.sequelize;
 const Donate = sequelize.define('donate', {
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true, 
+    primaryKey: true,
     autoIncrement: true
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  student_id: {
+  studentId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  item_id: {
+  itemId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -26,7 +26,7 @@ const Donate = sequelize.define('donate', {
   },
 }, {
   timestamps: true,
-  freezeTableName: true,
+  freezeTableName: true
 });
 
 module.exports = Donate;

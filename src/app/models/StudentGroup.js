@@ -2,12 +2,12 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const StudentGroup = sequelize.define('studentgroup', {
-  group_id: {
+const StudentGroup = sequelize.define('student_group', {
+  bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
-  student_id: {
+  studentId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
@@ -19,8 +19,7 @@ const StudentGroup = sequelize.define('studentgroup', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-},{
-  timestamps: false,
+}, {
   freezeTableName: true
 });
 

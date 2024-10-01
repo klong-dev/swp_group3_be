@@ -12,11 +12,11 @@ const MentorSkill = sequelize.define('mentorskill', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  skill_id: {
+  skillId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -24,9 +24,9 @@ const MentorSkill = sequelize.define('mentorskill', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-},{
-  timestamps: false,
+}, {
   freezeTableName: true
+
 });
 
 module.exports = MentorSkill;

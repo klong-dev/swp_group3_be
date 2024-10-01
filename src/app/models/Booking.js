@@ -8,7 +8,7 @@ const Booking = sequelize.define('booking', {
     primaryKey: true,
     autoIncrement: true
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
   },
   size: {
@@ -19,9 +19,9 @@ const Booking = sequelize.define('booking', {
     type: DataTypes.INTEGER,
   },
 
-},{
-  timestamps: false,
+}, {
   freezeTableName: true
+
 });
 
 module.exports = Booking;

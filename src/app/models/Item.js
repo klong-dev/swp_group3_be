@@ -17,7 +17,7 @@ const Item = sequelize.define('item', {
     type: DataTypes.FLOAT,
     allowNull: true,
   },
-  img_path: {
+  imgPath: {
     type: DataTypes.STRING,
     allowNull: true,
   },
@@ -25,9 +25,9 @@ const Item = sequelize.define('item', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-},{
-  timestamps: false,
+}, {
   freezeTableName: true
+
 });
 
 module.exports = Item;
