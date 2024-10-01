@@ -23,6 +23,8 @@ passport.use(new GoogleStrategy({
         accountId: profile.id,
         email: profile.emails[0].value,
         fullName: profile.displayName,
+        point: 50,
+        imgPath: profile.photos[0].value,
         status: 1,
       });
       done(null, newStudent);
