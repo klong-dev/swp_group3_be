@@ -2,21 +2,21 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const DonationHistory = sequelize.define('donation_history', {
+const Donate = sequelize.define('donate', {
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true, 
+    primaryKey: true,
     autoIncrement: true
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  student_id: {
+  studentId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  item_id: {
+  itemId: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -26,6 +26,7 @@ const DonationHistory = sequelize.define('donation_history', {
   },
 }, {
   timestamps: true,
+  freezeTableName: true
 });
 
-module.exports = DonationHistory;
+module.exports = Donate;

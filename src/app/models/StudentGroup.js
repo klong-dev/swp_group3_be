@@ -3,11 +3,11 @@ const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
 const StudentGroup = sequelize.define('student_group', {
-  group_id: {
+  bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
-  student_id: {
+  studentId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
@@ -19,6 +19,8 @@ const StudentGroup = sequelize.define('student_group', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+}, {
+  freezeTableName: true
 });
 
 module.exports = StudentGroup;

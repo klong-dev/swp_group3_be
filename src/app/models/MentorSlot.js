@@ -2,21 +2,21 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const MentorSchedule = sequelize.define('mentor_schedule', {
+const MentorSlot = sequelize.define('mentor_slot', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  schedule_start: {
+  slotStart: {
     type: DataTypes.DATE,
     allowNull: false
   },
-  schedule_end: {
+  slotEnd: {
     type: DataTypes.DATE,
     allowNull: false
   },
-  skill_id: {
+  skillId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -24,11 +24,11 @@ const MentorSchedule = sequelize.define('mentor_schedule', {
     type: DataTypes.FLOAT,
     allowNull: false
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  max_size: {
+  size: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
@@ -40,6 +40,9 @@ const MentorSchedule = sequelize.define('mentor_schedule', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+}, {
+  freezeTableName: true
+
 });
 
-module.exports = MentorSchedule;
+module.exports = MentorSlot;

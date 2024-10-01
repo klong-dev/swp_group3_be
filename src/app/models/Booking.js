@@ -2,13 +2,13 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const Group = sequelize.define('group', {
+const Booking = sequelize.define('booking', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
   },
   size: {
@@ -19,6 +19,9 @@ const Group = sequelize.define('group', {
     type: DataTypes.INTEGER,
   },
 
+}, {
+  freezeTableName: true
+
 });
 
-module.exports = Group;
+module.exports = Booking;

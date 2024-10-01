@@ -7,11 +7,11 @@ const Student = sequelize.define('student', {
     primaryKey: true,
     autoIncrement: true
   },
-  account_id: {
+  accountId: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  full_name: {
+  fullName: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -23,7 +23,7 @@ const Student = sequelize.define('student', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  img_path: {
+  imgPath: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -31,6 +31,9 @@ const Student = sequelize.define('student', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+}, {
+  freezeTableName: true
+
 });
 
 

@@ -3,13 +3,13 @@ const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
 const Feedback = sequelize.define('feedback', {
-  mentor_id: {
+  mentorId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false,
     autoIncrement: true
   },
-  student_id: {
+  studentId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false,
@@ -28,6 +28,8 @@ const Feedback = sequelize.define('feedback', {
   },
 }, {
   timestamps: true,
+  freezeTableName: true
+
 });
 
 module.exports = Feedback;
