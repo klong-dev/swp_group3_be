@@ -78,4 +78,5 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 - [body-parser](https://www.npmjs.com/package/body-parser)
 - [cors](https://www.npmjs.com/package/cors)
 
+# Discovery more
 [Frontend Repository](https://github.com/baotrongnh/swp_group3_fe)
