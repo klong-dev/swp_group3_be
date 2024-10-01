@@ -16,11 +16,11 @@ This project is a Node.js application using Express.js framework. It serves stat
 ## Installation
 1. Clone the repository:
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/klong-dev/swp_group3_be.git
    ```
 2. Navigate to the project directory:
    ```sh
-   cd <project-directory>
+   cd swp_group3_be
    ```
 3. Install the dependencies:
    ```sh
