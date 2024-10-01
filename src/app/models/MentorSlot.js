@@ -41,6 +41,7 @@ const MentorSlot = sequelize.define('mentor_slot', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 
 });

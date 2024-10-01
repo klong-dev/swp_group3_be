@@ -14,17 +14,19 @@ passport.use(new GoogleStrategy({
         return done(null, false, { message: 'Unauthorized domain' });
       }
       // Check if user already exists in our db
-      const existingStudent = await Student.findOne({ where: { account_id: profile.id } });
+      const existingStudent = await Student.findOne({ where: { accountId: profile.id } });
+      console.log(existingStudent)
       if (existingStudent) {
         return done(null, existingStudent);
       }
       // if (profile._json.hd === 'fpt.edu.vn') {
-        const newStudent = await Student.create({
-          account_id: profile.id,
-          email: profile.emails[0].value,
-          full_name: profile.displayName,
-        });
-        done(null, newStudent);
+      const newStudent = await Student.create({
+        accountId: profile.id,
+        email: profile.emails[0].value,
+        fullName: profile.displayName,
+        status: 1,
+      });
+      done(null, newStudent);
       // }
     } catch (err) {
       done(err, null);
@@ -33,12 +35,12 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.serializeUser((user, done) => {
-  done(null, user.account_id);
+  done(null, user.accountId);
 });
 
-passport.deserializeUser(async (account_id, done) => {
+passport.deserializeUser(async (accountId, done) => {
   try {
-    const user = await Student.findOne({ where: { account_id }});
+    const user = await Student.findOne({ where: { accountId } });
     done(null, user);
   } catch (err) {
     done(err, null);

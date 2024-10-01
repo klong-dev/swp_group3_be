@@ -26,6 +26,7 @@ const Item = sequelize.define('item', {
     allowNull: false,
   },
 }, {
+  timestamps:false,
   freezeTableName: true
 
 });

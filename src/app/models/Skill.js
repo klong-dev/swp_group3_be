@@ -21,6 +21,7 @@ const Skill = sequelize.define('skill', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 });
 

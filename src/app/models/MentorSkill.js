@@ -25,6 +25,7 @@ const MentorSkill = sequelize.define('mentor_skill', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 
 });

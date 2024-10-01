@@ -32,6 +32,7 @@ const Student = sequelize.define('student', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 
 });

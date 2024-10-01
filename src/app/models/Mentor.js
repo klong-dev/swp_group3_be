@@ -24,7 +24,7 @@ const Mentor = sequelize.define('mentor', {
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  imagePath: {
+  imgPath: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -33,6 +33,7 @@ const Mentor = sequelize.define('mentor', {
     allowNull: false
   },
 }, {
+  timestamps: false,
   freezeTableName: true
 
 });
