@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const MentorSkill = sequelize.define('mentorskill', {
+const MentorSkill = sequelize.define('mentor_skill', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,

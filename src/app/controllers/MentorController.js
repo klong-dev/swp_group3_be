@@ -14,18 +14,8 @@ class SearchController {
       const { skill, page = 1, name = "" } = req.query;
       const limit = 10;
       const offset = (parseInt(page) - 1) * parseInt(limit);
-      console.log(skill);
-
-      if (!skill && !name) {
-        return res.json([]);
-      }
-      if (!skill) {
+      if ((!skill || (Array.isArray(skill) && skill.length === 0)) && !name) {
         const { count, rows: mentors } = await Mentor.findAndCountAll({
-          where: {
-            full_name: {
-              [Op.like]: `%${name}%`,
-            },
-          },
           limit: parseInt(limit),
           offset: offset,
           order: [["point", "DESC"]],
@@ -36,23 +26,96 @@ class SearchController {
           totalPages: Math.ceil(count / limit),
           currentPage: parseInt(page),
           mentors: mentors,
+        });
+      }
+      let mentorIDs = {};
+      if (!skill) {
+        const { count, rows: mentors } = await Mentor.findAndCountAll({
+          where: {
+            fullName: {
+              [Op.like]: `%${name}%`,
+            },
+          },
+          limit: parseInt(limit),
+          offset: offset,
+          order: [["point", "DESC"]],
+        });
+        const mentorIds = mentors.map((mentor) => mentor.id);
+
+        const feedbacks = await Feedback.findAll({
+          where: {
+            mentorId: mentorIds,
+          },
+          order: [["createdAt", "DESC"]],
+        });
+
+        const ratingData = {};
+
+        feedbacks.forEach((feedback) => {
+          const { mentorId, rating } = feedback;
+
+          if (!ratingData[mentorId]) {
+            ratingData[mentorId] = { sum: 0, count: 0 };
+          }
+
+          ratingData[mentorId].sum += rating;
+          ratingData[mentorId].count += 1;
+        });
+
+        const averageRatingsArray = Object.keys(ratingData).map((mentorId) => {
+          const { sum, count } = ratingData[mentorId];
+          const averageRating = count > 0 ? sum / count : 0;
+
+          return {
+            mentorId: mentorId,
+            averageRating: averageRating,
+          };
+        });
+
+        console.log(averageRatingsArray);
+
+        const mentorsWithRatings = mentors.map((mentor) => {
+          const ratingObject = averageRatingsArray.find(
+            (rating) => rating.mentorId === mentor.id.toString()
+          );
+
+          const averageRating = ratingObject ? ratingObject.averageRating : 0;
+
+          return {
+            id: mentor.id,
+            accountId: mentor.accountId,
+            fullName: mentor.fullName,
+            email: mentor.email,
+            point: mentor.point,
+            imgPath: mentor.imgPath,
+            status: mentor.status,
+            averageRating: averageRating,
+          };
+        });
+
+        console.log(mentorsWithRatings);
+        return res.json({
+          error_code: 0,
+          totalMentors: mentorsWithRatings.length,
+          totalPages: Math.ceil(mentorsWithRatings.length / limit),
+          currentPage: parseInt(page),
+          mentors: mentorsWithRatings,
         });
       } else {
         const skillResult = await Skill.findOne({
           where: { name: skill },
         });
         const skillID = skillResult.id;
-        console.log(skillID);
         const mentorSkills = await MentorSkill.findAll({
           where: {
-            skill_id: skillID,
+            skillId: skillID,
           },
         });
-        const mentorIDs = mentorSkills.map((mentor) => mentor.id);
+        mentorIDs = mentorSkills.map((mentor) => mentor.id);
         const { count, rows: mentors } = await Mentor.findAndCountAll({
           where: {
             id: mentorIDs,
-            full_name: {
+            fullName: {
               [Op.like]: `%${name}%`,
             },
           },
@@ -60,13 +123,64 @@ class SearchController {
           offset: offset,
           order: [["point", "DESC"]],
         });
-        console.log(limit);
+
+        const mentorIds = mentors.map((mentor) => mentor.id);
+
+        const feedbacks = await Feedback.findAll({
+          where: {
+            mentorId: mentorIds, // Sử dụng mảng mentorIds để tìm feedback
+          },
+          order: [["createdAt", "DESC"]],
+        });
+
+        const ratingData = {};
+
+        feedbacks.forEach((feedback) => {
+          const { mentorId, rating } = feedback;
+
+          if (!ratingData[mentorId]) {
+            ratingData[mentorId] = { sum: 0, count: 0 };
+          }
+
+          ratingData[mentorId].sum += rating;
+          ratingData[mentorId].count += 1;
+        });
+
+        const averageRatingsArray = Object.keys(ratingData).map((mentorId) => {
+          const { sum, count } = ratingData[mentorId];
+          const averageRating = count > 0 ? sum / count : 0;
+
+          return {
+            mentorId: mentorId,
+            averageRating: averageRating,
+          };
+        });
+        console.log(averageRatingsArray);
+        const mentorsWithRatings = mentors.map((mentor) => {
+          const ratingObject = averageRatingsArray.find(
+            (rating) => rating.mentorId === mentor.id.toString()
+          );
+
+          const averageRating = ratingObject ? ratingObject.averageRating : 0;
+
+          return {
+            id: mentor.id,
+            accountId: mentor.accountId,
+            fullName: mentor.fullName,
+            email: mentor.email,
+            point: mentor.point,
+            imgPath: mentor.imgPath,
+            status: mentor.status,
+            averageRating: averageRating,
+          };
+        });
+        console.log(mentorsWithRatings);
         return res.json({
           error_code: 0,
-          totalMentors: count,
-          totalPages: Math.ceil(count / limit),
+          totalMentors: mentorsWithRatings.length,
+          totalPages: Math.ceil(mentorsWithRatings.length / limit),
           currentPage: parseInt(page),
-          mentors: mentors,
+          mentors: mentorsWithRatings,
         });
       }
     } catch (error) {
