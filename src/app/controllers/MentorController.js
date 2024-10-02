@@ -52,7 +52,7 @@ class SearchController {
             imgPath: mentor.imgPath,
             status: mentor.status,
             averageRating: averageRating,
-            count: count,
+            ratingCount: count,
           };
         });
         return res.json({
