@@ -124,7 +124,7 @@ class SearchController {
 
         const feedbacks = await Feedback.findAll({
           where: {
-            mentorId: mentorIds, // Sử dụng mảng mentorIds để tìm feedback
+            mentorId: mentorIds, 
           },
           order: [["createdAt", "DESC"]],
         });
@@ -193,7 +193,48 @@ class SearchController {
           id: id,
         },
       });
-      return res.json({ error_code: 0, mentor });
+
+      if (!mentor) {
+        return res.status(404).json({
+          error_code: 1,
+          message: "Mentor not found",
+        });
+      }
+
+      const feedbacks = await Feedback.findAll({
+        where: {
+          mentorId: id,
+        },
+        order: [["createdAt", "DESC"]],
+      });
+
+      const ratingData = feedbacks.reduce(
+        (acc, feedback) => {
+          acc.sum += feedback.rating;
+          acc.count += 1;
+          return acc;
+        },
+        { sum: 0, count: 0 }
+      );
+
+      const averageRating =
+        ratingData.count > 0 ? ratingData.sum / ratingData.count : 0;
+
+      const mentorWithRating = {
+        id: mentor.id,
+        accountId: mentor.accountId,
+        fullName: mentor.fullName,
+        email: mentor.email,
+        point: mentor.point,
+        imgPath: mentor.imgPath,
+        status: mentor.status,
+        averageRating: averageRating,
+      };
+
+      return res.json({
+        error_code: 0,
+        mentor: mentorWithRating,
+      });
     } catch (error) {
       console.log(error);
       return res
@@ -201,6 +242,7 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+
   async getListFeedback(req, res) {
     try {
       const { id } = req.query;
@@ -249,6 +291,14 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+  // async skills(id){
+  //   const mentorSkills = await MentorSkill.findAll({
+  //     where: {
+  //       mentoriId: id,
+  //     }
+  //   });
+  //   const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skillId)
+  // }
 }
 
 module.exports = new SearchController();
