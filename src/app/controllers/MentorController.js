@@ -52,6 +52,7 @@ class SearchController {
             imgPath: mentor.imgPath,
             status: mentor.status,
             averageRating: averageRating,
+            count: count,
           };
         });
         return res.json({
@@ -103,6 +104,7 @@ class SearchController {
           return {
             mentorId: mentorId,
             averageRating: averageRating,
+            count: count,
           };
         });
 
@@ -112,6 +114,7 @@ class SearchController {
           );
 
           const averageRating = ratingObject ? ratingObject.averageRating : 0;
+          const ratingCount = ratingObject ? ratingObject.count : 0;
 
           return {
             id: mentor.id,
@@ -122,6 +125,7 @@ class SearchController {
             imgPath: mentor.imgPath,
             status: mentor.status,
             averageRating: averageRating,
+            ratingCount: ratingCount,
           };
         });
         return res.json({
@@ -142,7 +146,7 @@ class SearchController {
           },
         });
         mentorIDs = mentorSkills.map((mentor) => mentor.id);
-        const { count, rows: mentors } = await Mentor.findAndCountAll({
+        const { rows: mentors } = await Mentor.findAndCountAll({
           where: {
             id: mentorIDs,
             fullName: {
@@ -183,6 +187,7 @@ class SearchController {
           return {
             mentorId: mentorId,
             averageRating: averageRating,
+            count: count,
           };
         });
         const mentorsWithRatings = mentors.map((mentor) => {
@@ -191,6 +196,7 @@ class SearchController {
           );
 
           const averageRating = ratingObject ? ratingObject.averageRating : 0;
+          const ratingCount = ratingObject ? ratingObject.count : 0;
 
           return {
             id: mentor.id,
@@ -201,6 +207,7 @@ class SearchController {
             imgPath: mentor.imgPath,
             status: mentor.status,
             averageRating: averageRating,
+            ratingCount: ratingCount,
           };
         });
         return res.json({
@@ -241,7 +248,6 @@ class SearchController {
         },
         order: [["createdAt", "DESC"]],
       });
-
       const ratingData = feedbacks.reduce(
         (acc, feedback) => {
           acc.sum += feedback.rating;
