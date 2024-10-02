@@ -51,7 +51,7 @@ class SearchController {
             point: mentor.point,
             imgPath: mentor.imgPath,
             status: mentor.status,
-            averageRating: averageRating,
+            averageRating: averageRating.toFixed(1),
             ratingCount: count,
           };
         });
@@ -124,7 +124,7 @@ class SearchController {
             point: mentor.point,
             imgPath: mentor.imgPath,
             status: mentor.status,
-            averageRating: averageRating,
+            averageRating: averageRating.toFixed(1),
             ratingCount: ratingCount,
           };
         });
@@ -206,7 +206,7 @@ class SearchController {
             point: mentor.point,
             imgPath: mentor.imgPath,
             status: mentor.status,
-            averageRating: averageRating,
+            averageRating: averageRating.toFixed(1),
             ratingCount: ratingCount,
           };
         });
@@ -268,7 +268,7 @@ class SearchController {
         point: mentor.point,
         imgPath: mentor.imgPath,
         status: mentor.status,
-        averageRating: averageRating,
+        averageRating: averageRating.toFixed(1),
       };
 
       return res.json({
@@ -300,7 +300,7 @@ class SearchController {
       return res.json({
         error_code: 0,
         feedbacks,
-        averageRating,
+        averageRating: averageRating.toFixed(1),
       });
     } catch (error) {
       console.log(error);
