@@ -20,12 +20,46 @@ class SearchController {
           offset: offset,
           order: [["point", "DESC"]],
         });
+        const mentorIds = mentors.map((mentor) => mentor.id);
+        const feedbacks = await Feedback.findAll({
+          where: {
+            mentorId: mentorIds,
+          },
+          order: [["createdAt", "DESC"]],
+        });
+        const ratingData = {};
+        feedbacks.forEach((feedback) => {
+          const { mentorId, rating } = feedback;
+
+          if (!ratingData[mentorId]) {
+            ratingData[mentorId] = { sum: 0, count: 0 };
+          }
+
+          ratingData[mentorId].sum += rating;
+          ratingData[mentorId].count += 1;
+        });
+
+        const mentorsWithRatings = mentors.map((mentor) => {
+          const { sum, count } = ratingData[mentor.id] || { sum: 0, count: 0 };
+          const averageRating = count > 0 ? sum / count : 0;
+
+          return {
+            id: mentor.id,
+            accountId: mentor.accountId,
+            fullName: mentor.fullName,
+            email: mentor.email,
+            point: mentor.point,
+            imgPath: mentor.imgPath,
+            status: mentor.status,
+            averageRating: averageRating,
+          };
+        });
         return res.json({
           error_code: 0,
           totalMentors: count,
           totalPages: Math.ceil(count / limit),
           currentPage: parseInt(page),
-          mentors: mentors,
+          mentors: mentorsWithRatings,
         });
       }
       let mentorIDs = {};
@@ -124,7 +158,7 @@ class SearchController {
 
         const feedbacks = await Feedback.findAll({
           where: {
-            mentorId: mentorIds, 
+            mentorId: mentorIds,
           },
           order: [["createdAt", "DESC"]],
         });
