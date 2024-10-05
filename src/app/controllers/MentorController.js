@@ -186,13 +186,14 @@ class SearchController {
           id: id,
         },
       });
-
+  
       if (!mentor) {
         return res.status(404).json({
           error_code: 1,
           message: "Mentor not found",
         });
       }
+  
 
       const feedbacks = await Feedback.findAll({
         where: {
@@ -200,9 +201,30 @@ class SearchController {
         },
         order: [["createdAt", "DESC"]],
       });
-
+  
+     
       const averageRating = this.calculateAverageRating(feedbacks);
-
+  
+      
+      const mentorSkills = await MentorSkill.findAll({
+        where: {
+          mentorId: id
+        }
+      });
+  
+      
+      const skillIds = mentorSkills.map(ms => ms.skillId);
+  
+    
+      const skills = await Skill.findAll({
+        where: {
+          id: skillIds
+        }
+      });
+  
+    
+      const skillNames = skills.map(skill => skill.name);
+  
       const mentorWithRating = {
         id: mentor.id,
         accountId: mentor.accountId,
@@ -212,8 +234,9 @@ class SearchController {
         imgPath: mentor.imgPath,
         status: mentor.status,
         averageRating,
+        skills: skillNames, 
       };
-
+  
       return res.json({
         error_code: 0,
         mentor: mentorWithRating,
@@ -249,7 +272,7 @@ class SearchController {
         .status(500)
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
-  };
+  }
   async getSkills(req, res) {
     try {
       const { id } = req.query;
@@ -278,8 +301,10 @@ class SearchController {
       const skills = await Skill.findAll();
       return res.json(skills);
     } catch (error) {
-      console.error("Error fetching skills:", error);
-      return [];
+      console.log(error);
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
 }
