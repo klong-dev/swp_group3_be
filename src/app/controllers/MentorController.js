@@ -16,7 +16,7 @@ class SearchController {
       const offset = (parseInt(page) - 1) * parseInt(limit);
       console.log(skill);
 
-      if (!skill && !name) {
+      if (!skill && !name || !skill.length == 0 && !name ) {
         return res.json([]);
       }
       if (!skill) {
