@@ -13,7 +13,6 @@ passport.use(new GoogleStrategy({
       if (profile._json.hd !== 'fpt.edu.vn') {
         return done(null, false, { message: 'Unauthorized domain' });
       }
-      // Check if user already exists in our db
       const existingStudent = await Student.findOne({ where: { accountId: profile.id } });
       if (existingStudent) {
         return done(null, existingStudent);
