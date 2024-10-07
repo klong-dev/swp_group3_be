@@ -7,7 +7,6 @@ const Feedback = sequelize.define('feedback', {
     type: DataTypes.INTEGER,
     primaryKey: true,
     allowNull: false,
-    autoIncrement: true
   },
   studentId: {
     type: DataTypes.INTEGER,
