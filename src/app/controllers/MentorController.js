@@ -212,6 +212,7 @@ class SearchController {
         id: mentor.id,
         accountId: mentor.accountId,
         fullName: mentor.fullName,
+        description: mentor.description,
         email: mentor.email,
         point: mentor.point,
         imgPath: mentor.imgPath,
@@ -280,7 +281,6 @@ class SearchController {
   }
   async loadAllSkills(req,res) {
     try {
-      console.log(1);
       const skills = await Skill.findAll();
       return res.json(skills);
     } catch (error) {
