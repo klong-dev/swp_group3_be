@@ -27,19 +27,10 @@ class SearchController {
       }
 
       if (skill && !(Array.isArray(skill) && skill.length === 0)) {
-        const skillResult = await Skill.findOne({
-          where: { name: skill },
-        });
-
-        if (!skillResult) {
-          return res.json({
-            error_code: 1,
-            message: "Skill not found",
-          });
-        }
+       
 
         const mentorSkills = await MentorSkill.findAll({
-          where: { skillId: skillResult.id },
+          where: { skillId: skill },
         });
 
         const targetMentorIds = mentorSkills.map((ms) => ms.mentorId);
@@ -193,16 +184,12 @@ class SearchController {
           message: "Mentor not found",
         });
       }
-  
-
       const feedbacks = await Feedback.findAll({
         where: {
           mentorId: id,
         },
         order: [["createdAt", "DESC"]],
       });
-  
-     
       const averageRating = this.calculateAverageRating(feedbacks);
   
       
@@ -210,9 +197,7 @@ class SearchController {
         where: {
           mentorId: id
         }
-      });
-  
-      
+      });      
       const skillIds = mentorSkills.map(ms => ms.skillId);
   
     
@@ -220,9 +205,7 @@ class SearchController {
         where: {
           id: skillIds
         }
-      });
-  
-    
+      }); 
       const skillNames = skills.map(skill => skill.name);
   
       const mentorWithRating = {
