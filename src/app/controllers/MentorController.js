@@ -15,9 +15,9 @@ class SearchController {
   // 4 params: skills,search, rating
   getMentors = async (req, res) => {
     try {
-      const { skill, page = 1, name = "", rating = 0 } = req.query;
+      const { skill = [], page = 1, name = "", rating } = req.query;
       const limit = 10;
-
+      console.log(typeof rating);
       let whereCondition = {};
 
       if (name && name.trim() !== "") {
@@ -27,12 +27,9 @@ class SearchController {
       }
 
       if (skill && !(Array.isArray(skill) && skill.length === 0)) {
-       
-
         const mentorSkills = await MentorSkill.findAll({
-          where: { skillId: skill },
+          where: { skillId: skill }
         });
-
         const targetMentorIds = mentorSkills.map((ms) => ms.mentorId);
 
         if (targetMentorIds.length > 0) {
@@ -61,7 +58,6 @@ class SearchController {
           mentors: [],
         });
       }
-
       const mentorIds = allMentors.map((mentor) => mentor.id);
       const feedbacks = await Feedback.findAll({
         where: {
@@ -282,6 +278,7 @@ class SearchController {
   async loadAllSkills(req,res) {
     try {
       const skills = await Skill.findAll();
+
       return res.json(skills);
     } catch (error) {
       console.log(error);
