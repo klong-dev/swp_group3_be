@@ -27,6 +27,11 @@ const Student = sequelize.define('student', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  isMentor: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
   status: {
     type: DataTypes.INTEGER,
     allowNull: false
