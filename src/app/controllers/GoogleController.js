@@ -24,6 +24,7 @@ passport.use(new GoogleStrategy({
         fullName: profile.displayName,
         point: 50,
         imgPath: profile.photos[0].value,
+        isMentor: 0,
         status: 1,
       });
       done(null, newStudent);
