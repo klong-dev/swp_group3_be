@@ -4,10 +4,9 @@ const Mentor = require('../app/models/Mentor');
 
 const authenticateJWT = async (req, res, next) => {
   try {
-    const authorizationHeader = req.headers.authorization;
-    const token = authorizationHeader && authorizationHeader.split(' ')[1];
+    const token = req.headers.authorization
     if (!token) {
-      return res.status(401).json({ message: 'No token provided. Please log in.' });
+      return res.status(401).json({ message: 'No token provided. Please log in' });
     }
     const data = jwt.decode(token);
     req.accountId = data.accountId;
