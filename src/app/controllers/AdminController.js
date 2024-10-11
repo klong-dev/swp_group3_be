@@ -5,26 +5,26 @@ const { Op } = require('sequelize');
 class AdminController {
   async showMentorList(req, res) {
     try {
-      // const page = parseInt(req.query.page) || 1;
-      // const pageSize = 10;
-      // const offset = (page - 1) * pageSize;
+      const page = parseInt(req.query.page) || 1;
+      const pageSize = 10;
+      const offset = (page - 1) * pageSize;
 
-      // const sortField = req.query.sort === 'point' ? 'points' : 'name';
-      // const sortOrder = sortField === 'points' ? 'DESC' : 'ASC';
+      const sortField = req.query.sort === 'point' ? 'points' : 'name';
+      const sortOrder = sortField === 'points' ? 'DESC' : 'ASC';
 
-      // const totalMentors = await Mentor.count();
+      const totalMentors = await Mentor.count();
 
       const mentorList = await Mentor.findAll({
-        // order: [[sortField, sortOrder]],
-        // limit: pageSize,
-        // offset: offset,
+        order: [[sortField, sortOrder]],
+        limit: pageSize,
+        offset: offset,
       });
 
       return res.json({
         error_code: 0,
-        // totalMentors,
-        // currentPage: page,
-        // totalPages: Math.ceil(totalMentors / pageSize),
+        totalMentors,
+        currentPage: page,
+        totalPages: Math.ceil(totalMentors / pageSize),
         mentorList,
       });
     } catch (error) {
