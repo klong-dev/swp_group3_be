@@ -6,6 +6,10 @@ const response_status = {
         error_code: 1,
         message: 'Please provide all required fields'
     },
+    data_not_found: {
+        error_code: 2,
+        message: 'Data not found'
+    },
     booking_success: (data) => {
         return {
             error_code: 0,
@@ -87,6 +91,10 @@ class BookingController {
 
     async get(req, res) {
         try {
+            if (!req.params.id) {
+                res.status(400).json(response_status.missing_fields);
+                return;
+            }
             const booking = await Booking.findByPk(req.params.id);
             res.status(200).json(response_status.get_success(booking));
         } catch (error) {
