@@ -262,6 +262,7 @@ class SearchController {
         where: { mentorId: id },
         order: [["createdAt", "DESC"]],
       });
+  
       const formatter = new Intl.DateTimeFormat('vi-VN', {
         year: 'numeric',
         month: '2-digit',
@@ -272,26 +273,35 @@ class SearchController {
         hour12: false,
         timeZone: 'Asia/Ho_Chi_Minh'
       });
+  
       const studentIds = [...new Set(feedbacks.map(feedback => feedback.studentId))];
-
+  
       const students = await Student.findAll({
         where: {
           id: studentIds
         },
-        attributes: ['id', 'fullName']
+        attributes: ['id', 'fullName', 'imgPath']
       });
-
+  
       const studentMap = students.reduce((acc, student) => {
-        acc[student.id] = student.fullName;
+        acc[student.id] = {
+          fullName: student.fullName,
+          imgPath: student.imgPath
+        };
         return acc;
       }, {});
   
-      const formattedFeedbacks = feedbacks.map(feedback => ({
-        studentName: studentMap[feedback.studentId] || 'Unknown',
-        ...feedback.get({ plain: true }),
-        createdAt: formatter.format(new Date(feedback.createdAt)).replace(/\//g, '-'),
-        updatedAt: formatter.format(new Date(feedback.updatedAt)).replace(/\//g, '-')
-      }));
+      const formattedFeedbacks = feedbacks.map(feedback => {
+        const student = studentMap[feedback.studentId] || { fullName: 'Unknown', imgPath: null };
+        return {
+          ...feedback.get({ plain: true }),
+          studentName: student.fullName,
+          studentAvatar: student.imgPath,
+          createdAt: formatter.format(new Date(feedback.createdAt)).replace(/\//g, '-'),
+          updatedAt: formatter.format(new Date(feedback.updatedAt)).replace(/\//g, '-')
+        };
+      });
+  
       const averageRating = this.calculateAverageRating(feedbacks);
   
       return res.json({
