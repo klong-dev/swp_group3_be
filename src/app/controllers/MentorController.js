@@ -253,22 +253,50 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-
+  
+  
   getListFeedback = async (req, res) => {
     try {
       const { id } = req.query;
       const feedbacks = await Feedback.findAll({
-        where: {
-          mentorId: id,
-        },
+        where: { mentorId: id },
         order: [["createdAt", "DESC"]],
       });
+      const formatter = new Intl.DateTimeFormat('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Ho_Chi_Minh'
+      });
+      const studentIds = [...new Set(feedbacks.map(feedback => feedback.studentId))];
 
+      const students = await Student.findAll({
+        where: {
+          id: studentIds
+        },
+        attributes: ['id', 'fullName']
+      });
+
+      const studentMap = students.reduce((acc, student) => {
+        acc[student.id] = student.fullName;
+        return acc;
+      }, {});
+  
+      const formattedFeedbacks = feedbacks.map(feedback => ({
+        studentName: studentMap[feedback.studentId] || 'Unknown',
+        ...feedback.get({ plain: true }),
+        createdAt: formatter.format(new Date(feedback.createdAt)).replace(/\//g, '-'),
+        updatedAt: formatter.format(new Date(feedback.updatedAt)).replace(/\//g, '-')
+      }));
       const averageRating = this.calculateAverageRating(feedbacks);
-
+  
       return res.json({
         error_code: 0,
-        feedbacks,
+        feedbacks: formattedFeedbacks,
         averageRating,
       });
     } catch (error) {
