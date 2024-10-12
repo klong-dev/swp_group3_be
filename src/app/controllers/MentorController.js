@@ -81,8 +81,7 @@ class SearchController {
           currentPage: parseInt(page),
           mentors: [],
         });
-      }
-  
+      } 
       const mentorIds = allMentors.map((mentor) => mentor.id);
   
       const feedbacks = await Feedback.findAll({
@@ -338,18 +337,30 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-  async loadAllSkills(req,res) {
+  async loadAllSkills(req, res) {
     try {
-      const skills = await Skill.findAll();
+        const skills = await Skill.findAll();
+        const skillsWithMentorCount = await Promise.all(skills.map(async (skill) => {
+            const count = await MentorSkill.count({
+                where: {
+                    skillId: skill.id,
+                },
+            });
+            return {
+                ...skill.toJSON(), 
+                mentorCount: count,
+            };
+        }));
 
-      return res.json(skills);
+        return res.json({ error_code: 0, skills: skillsWithMentorCount });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
+        console.log(error);
+        return res
+            .status(500)
+            .json({ error_code: 1, message: "ERROR", error: error.message });
     }
-  }
+}
+
 }
 
 module.exports = new SearchController();
