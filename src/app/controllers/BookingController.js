@@ -1,4 +1,5 @@
 const Booking = require('../models/Booking');
+const StudentGroup = require('../models/StudentGroup');
 
 const response_status = {
     missing_fields: {
@@ -53,15 +54,22 @@ class BookingController {
         try {
             const bookingData = {
                 mentorId: req.body.mentorId,
+                studentId: req.body.studentId,
                 size: req.body.size,
                 status: 1
             };
-            if (!bookingData.mentorId || !bookingData.size) {
+            if (!bookingData.mentorId || !bookingData.size || !bookingData.studentId) {
                 res.status(400).json(response_status.missing_fields);
                 return;
             }
             const booking = await Booking.create(bookingData);
-            res.status(200).json(response_status.booking_success(booking));
+            const studentGroup = await StudentGroup.create({
+                bookingId: booking.id,
+                studentId: bookingData.studentId,
+                role: 1,
+                status: 1
+            });
+            res.status(200).json(response_status.booking_success({ booking: booking, studentGroup: studentGroup }));
         } catch (error) {
             console.log(error);
             res.status(400).json(response_status.internal_server_error(error));
