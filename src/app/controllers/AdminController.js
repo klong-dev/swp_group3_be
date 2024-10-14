@@ -5,28 +5,8 @@ const { Op } = require('sequelize');
 class AdminController {
   async showMentorList(req, res) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const pageSize = 10;
-      const offset = (page - 1) * pageSize;
-
-      const sortField = req.query.sort === 'point' ? 'points' : 'name';
-      const sortOrder = sortField === 'points' ? 'DESC' : 'ASC';
-
-      const totalMentors = await Mentor.count();
-
-      const mentorList = await Mentor.findAll({
-        order: [[sortField, sortOrder]],
-        limit: pageSize,
-        offset: offset,
-      });
-
-      return res.json({
-        error_code: 0,
-        totalMentors,
-        currentPage: page,
-        totalPages: Math.ceil(totalMentors / pageSize),
-        mentorList,
-      });
+      const mentorList = await Mentor.findAll();
+      return res.json({ error_code: 0, mentorList });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
     }
@@ -252,14 +232,14 @@ class AdminController {
 
   async searchStudentByName(req, res) {
     try {
-      const searchTerm = req.query.name || ''; 
+      const searchTerm = req.query.name || '';
       const studentList = await Student.findAll({
         where: {
           name: {
             [Op.like]: `%${searchTerm}%`
           }
         },
-        order: [['name', 'ASC']], 
+        order: [['name', 'ASC']],
       });
 
       if (studentList.length === 0) {
@@ -280,7 +260,7 @@ class AdminController {
       const studentList = await Student.findAll({
         where: {
           email: {
-            [Op.like]: `%${studentId}%` 
+            [Op.like]: `%${studentId}%`
           }
         }
       });
