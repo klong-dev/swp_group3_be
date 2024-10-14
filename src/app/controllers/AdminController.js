@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 class AdminController {
   async showMentorList(req, res) {
     try {
-      const mentorList = await Mentor.findAll();
+      const mentorList = await Mentor.findAll({ where: { status: 1 } });
       return res.json({ error_code: 0, mentorList });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
