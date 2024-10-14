@@ -163,11 +163,11 @@ class AdminController {
         where: { status: 0 },
       });
       if (inactiveMentors.length === 0) {
-        return res.status(404).json({ error_code: 1, message: 'No inactive mentors found' });
+        return res.json({ error_code: 1, inactiveMentors });
       }
       res.status(200).json({ error_code: 0, mentors: inactiveMentors });
     } catch (error) {
-      res.status(500).json({ error_code: 1, error: error.message });
+      res.status(500).json({ error_code: 2, error: error.message });
     }
   }
 
