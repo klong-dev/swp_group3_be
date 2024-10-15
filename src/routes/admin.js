@@ -16,6 +16,6 @@ router.get('/search-mentor-by-name', Auth, AdminController.searchMentorByName);
 router.get('/search-mentor-by-id', Auth, AdminController.searchMentorByMentorId);
 router.get('/search-student-by-name', Auth, AdminController.searchStudentByName);
 router.get('/search-student-by-id', Auth, AdminController.searchStudentByStudentId);
-
+router.get('/activate-mentor/:id', Auth, AdminController.activateMentor);
 
 module.exports = router

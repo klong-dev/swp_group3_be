@@ -186,6 +186,21 @@ class AdminController {
     }
   }
 
+  async activateMentor(req, res) {
+    try {
+      const mentorId = req.params.id;
+      const mentor = await Mentor.findByPk(mentorId);
+      if (!mentor || mentor.status === 1) {
+        return res.status(404).json({ error_code: 1, message: 'Mentor not found or already active' });
+      }
+      mentor.status = 1;
+      await mentor.save();
+      res.status(200).json({ error_code: 0, message: 'Mentor activated successfully' });
+    } catch (error) {
+      res.status(500).json({ error_code: 1, error });
+    }
+  }
+
   async searchMentorByName(req, res) {
     try {
       const searchTerm = req.query.name || '';
