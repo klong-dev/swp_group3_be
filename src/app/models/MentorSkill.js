@@ -2,23 +2,20 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
-const MentorSkill = sequelize.define('mentorskill', {
-  id: {
+const MentorSkill = sequelize.define('mentor_skill', {
+  skillId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true
+    allowNull: false
+  },
+  mentorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
   },
   level: {
     type: DataTypes.INTEGER,
     allowNull: true
-  },
-  mentorId: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  skillId: {
-    type: DataTypes.INTEGER,
-    allowNull: false
   },
   status: {
     type: DataTypes.INTEGER,

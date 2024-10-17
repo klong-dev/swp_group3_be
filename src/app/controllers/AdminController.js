@@ -48,7 +48,7 @@ class AdminController {
       });
       return res.json({ error_code: 0, message: "Promotion successful", mentor: newMentor });
     } catch (error) {
-      return res.status(500).json({ error_code: 1, error: error.message });
+      return res.status(500).json({ error_code: 1, error});
     }
   }
 

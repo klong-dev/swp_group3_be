@@ -1,5 +1,6 @@
 const Mentor = require('../models/Mentor');
 const Student = require('../models/Student')
+const MentorSkill = require('../models/MentorSkill')
 class StudentController {
   async getStudentByAccountId(req, res) {
     try {
@@ -31,6 +32,50 @@ class StudentController {
     } catch (error) {
       console.log(error);
       res.json({ "error_code": 500, error });
+    }
+  }
+
+  async applyToBeMentor(req, res) {
+    try {
+      const { skills, studentId } = req.body;
+
+      if (!Array.isArray(skills) || !studentId) {
+        return res.json({ error_code: 1, message: "Skills must be an array and student ID is required." });
+      }
+      const student = await Student.findOne({ where: { accountId: studentId } });
+      if (!student) {
+        return res.json({ error_code: 2, message: "Student not found." });
+      }
+
+      const { accountId, fullName, email, imgPath } = student;
+
+      const existingApplication = await Mentor.findOne({ where: { accountId } });
+      if (existingApplication) {
+        return res.status(409).json({ error_code: 3, message: "Application already exists." });
+      }
+      const applyingMentor = await Mentor.create({
+        accountId,
+        fullName,
+        email,
+        imgPath,
+        point: 0,
+        status: 2, // pending
+      });
+      const mentorSkills = await Promise.all(
+        skills.map(async (skill) => {
+          const { skillId, level, status } = skill;
+          return await MentorSkill.create({
+            skillId,
+            mentorId: applyingMentor.id,
+            level: level || 1,
+            status: status || 1,
+          });
+        })
+      );
+      return res.status(201).json({ error_code: 0, applyingMentor, mentorSkills });
+    } catch (error) {
+      console.error("Error applying to be a mentor:", error);
+      return res.status(500).json({ error_code: 4, message: error });
     }
   }
 

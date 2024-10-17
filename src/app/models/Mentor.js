@@ -3,14 +3,10 @@ const db = require("../../config/db/index");
 const sequelize = db.sequelize;
 
 const Mentor = sequelize.define("mentor", {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
   accountId: {
     type: DataTypes.STRING,
     allowNull: false,
+    primaryKey: true,
   },
   fullName: {
     type: DataTypes.STRING,
