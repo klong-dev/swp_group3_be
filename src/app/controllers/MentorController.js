@@ -81,8 +81,7 @@ class SearchController {
           currentPage: parseInt(page),
           mentors: [],
         });
-      }
-  
+      } 
       const mentorIds = allMentors.map((mentor) => mentor.id);
   
       const feedbacks = await Feedback.findAll({
@@ -253,22 +252,60 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-
+  
+  
   getListFeedback = async (req, res) => {
     try {
       const { id } = req.query;
       const feedbacks = await Feedback.findAll({
-        where: {
-          mentorId: id,
-        },
+        where: { mentorId: id },
         order: [["createdAt", "DESC"]],
       });
-
+  
+      const formatter = new Intl.DateTimeFormat('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Ho_Chi_Minh'
+      });
+  
+      const studentIds = [...new Set(feedbacks.map(feedback => feedback.studentId))];
+  
+      const students = await Student.findAll({
+        where: {
+          id: studentIds
+        },
+        attributes: ['id', 'fullName', 'imgPath']
+      });
+  
+      const studentMap = students.reduce((acc, student) => {
+        acc[student.id] = {
+          fullName: student.fullName,
+          imgPath: student.imgPath
+        };
+        return acc;
+      }, {});
+  
+      const formattedFeedbacks = feedbacks.map(feedback => {
+        const student = studentMap[feedback.studentId] || { fullName: 'Unknown', imgPath: null };
+        return {
+          ...feedback.get({ plain: true }),
+          studentName: student.fullName,
+          studentAvatar: student.imgPath,
+          createdAt: formatter.format(new Date(feedback.createdAt)).replace(/\//g, '-'),
+          updatedAt: formatter.format(new Date(feedback.updatedAt)).replace(/\//g, '-')
+        };
+      });
+  
       const averageRating = this.calculateAverageRating(feedbacks);
-
+  
       return res.json({
         error_code: 0,
-        feedbacks,
+        feedbacks: formattedFeedbacks,
         averageRating,
       });
     } catch (error) {
@@ -300,18 +337,30 @@ class SearchController {
         .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-  async loadAllSkills(req,res) {
+  async loadAllSkills(req, res) {
     try {
-      const skills = await Skill.findAll();
+        const skills = await Skill.findAll();
+        const skillsWithMentorCount = await Promise.all(skills.map(async (skill) => {
+            const count = await MentorSkill.count({
+                where: {
+                    skillId: skill.id,
+                },
+            });
+            return {
+                ...skill.toJSON(), 
+                mentorCount: count,
+            };
+        }));
 
-      return res.json(skills);
+        return res.json({ error_code: 0, skills: skillsWithMentorCount });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
+        console.log(error);
+        return res
+            .status(500)
+            .json({ error_code: 1, message: "ERROR", error: error.message });
     }
-  }
+}
+
 }
 
 module.exports = new SearchController();
