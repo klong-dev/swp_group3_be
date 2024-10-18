@@ -5,6 +5,7 @@ const google = require('./account/google-auth')
 const feedback = require('./feedback')
 const booking = require('./booking')
 const group = require('./group')
+const schedule = require('./schedule')
 
 function routes(app) {
   app.use('/auth/google', google);
@@ -15,6 +16,7 @@ function routes(app) {
   app.use('/feedback', feedback);
   app.use('/booking', booking);
   app.use('/group', group);
+  app.use('/schedule', schedule)
 }
 
 module.exports = routes;
