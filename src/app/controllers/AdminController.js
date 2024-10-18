@@ -40,28 +40,8 @@ class AdminController {
 
   async showMentorList(req, res) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const pageSize = 10;
-      const offset = (page - 1) * pageSize;
-
-      const sortField = req.query.sort === 'point' ? 'points' : 'name';
-      const sortOrder = sortField === 'points' ? 'DESC' : 'ASC';
-
-      const totalMentors = await Mentor.count();
-
-      const mentorList = await Mentor.findAll({
-        order: [[sortField, sortOrder]],
-        limit: pageSize,
-        offset: offset,
-      });
-
-      return res.json({
-        error_code: 0,
-        totalMentors,
-        currentPage: page,
-        totalPages: Math.ceil(totalMentors / pageSize),
-        mentorList,
-      });
+      const mentorList = await Mentor.findAll({ where: { status: 1 } });
+      return res.json({ error_code: 0, mentorList });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
     }
@@ -103,7 +83,7 @@ class AdminController {
       });
       return res.json({ error_code: 0, message: "Promotion successful", mentor: newMentor });
     } catch (error) {
-      return res.status(500).json({ error_code: 1, error: error.message });
+      return res.status(500).json({ error_code: 1, error});
     }
   }
 
@@ -218,11 +198,11 @@ class AdminController {
         where: { status: 0 },
       });
       if (inactiveMentors.length === 0) {
-        return res.status(404).json({ error_code: 1, message: 'No inactive mentors found' });
+        return res.json({ error_code: 1, inactiveMentors });
       }
       res.status(200).json({ error_code: 0, mentors: inactiveMentors });
     } catch (error) {
-      res.status(500).json({ error_code: 1, error: error.message });
+      res.status(500).json({ error_code: 2, error: error.message });
     }
   }
 
@@ -238,6 +218,21 @@ class AdminController {
       res.status(200).json({ error_code: 0, message: 'Mentor disabled successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error: error.message });
+    }
+  }
+
+  async activateMentor(req, res) {
+    try {
+      const mentorId = req.params.id;
+      const mentor = await Mentor.findByPk(mentorId);
+      if (!mentor || mentor.status === 1) {
+        return res.status(404).json({ error_code: 1, message: 'Mentor not found or already active' });
+      }
+      mentor.status = 1;
+      await mentor.save();
+      res.status(200).json({ error_code: 0, message: 'Mentor activated successfully' });
+    } catch (error) {
+      res.status(500).json({ error_code: 1, error });
     }
   }
 
@@ -287,14 +282,14 @@ class AdminController {
 
   async searchStudentByName(req, res) {
     try {
-      const searchTerm = req.query.name || ''; 
+      const searchTerm = req.query.name || '';
       const studentList = await Student.findAll({
         where: {
           name: {
             [Op.like]: `%${searchTerm}%`
           }
         },
-        order: [['name', 'ASC']], 
+        order: [['name', 'ASC']],
       });
 
       if (studentList.length === 0) {
@@ -315,7 +310,7 @@ class AdminController {
       const studentList = await Student.findAll({
         where: {
           email: {
-            [Op.like]: `%${studentId}%` 
+            [Op.like]: `%${studentId}%`
           }
         }
       });
