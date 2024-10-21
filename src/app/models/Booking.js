@@ -10,19 +10,27 @@ const Booking = sequelize.define('booking', {
   },
   mentorId: {
     type: DataTypes.INTEGER,
+    allowNull: false, 
   },
   size: {
     type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  startTime: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endTime: {
+    type: DataTypes.DATE,
     allowNull: false
   },
   status: {
     type: DataTypes.INTEGER,
+    allowNull: false,
   },
-
 }, {
   timestamps: false,
   freezeTableName: true
-
 });
 
 module.exports = Booking;

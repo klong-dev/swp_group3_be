@@ -86,8 +86,8 @@ router.get('/callback',
     failureRedirect: '/auth/google/failed'
   }),
   (req, res) => {
-    const { accountId, email } = req.user
-    const token = jwt.sign({accountId, email }, process.env.JWT_SECRET, {
+    const { accountId, email, isMentor } = req.user
+    const token = jwt.sign({ accountId, email, isMentor }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     });
     return res.redirect(`${process.env.CLIENT_URL}/login?token=${token}`);
