@@ -60,10 +60,9 @@ class BookingController {
                 mentorId: req.body.mentorId,
                 studentId: req.body.studentId,
                 startTime: req.body.startTime,
-                size: req.body.size,
                 status: 1
             };
-            if (!bookingData.mentorId || !bookingData.size || !bookingData.studentId || !bookingData.startTime) {
+            if (!bookingData.mentorId || !bookingData.studentId || !bookingData.startTime) {
                 res.status(400).json(response_status.missing_fields);
                 return;
             }
@@ -74,7 +73,7 @@ class BookingController {
 
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
-                size: bookingData.size,
+                size: 999,
                 startTime: bookingData.startTime,
                 endTime: endTime,
                 status: 1
