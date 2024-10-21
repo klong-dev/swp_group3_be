@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const StudentGroup = require('../models/StudentGroup');
+const { Op } = require('sequelize');
 
 const response_status = {
     missing_fields: {
@@ -102,13 +103,27 @@ class BookingController {
                 return res.status(400).json(response_status.missing_fields);
             }
             if (type === 'mentor') {
-                const bookings = await Booking.findAll({ where: { mentorId: id }, raw: true });
+                const bookings = await Booking.findAll({ where: { mentorId: id,
+                        startTime: {
+                            [Op.gt]: new Date()
+                        }
+                    },
+                    raw: true
+                });
                 res.status(200).json(response_status.list_success(bookings));
             }
             if (type === 'student') {
-                const getGroup = await StudentGroup.findAll({ where: { studentId: id }, raw: true });
+                const getGroup = await StudentGroup.findAll({ where: { studentId: id, }, raw: true });
                 const bookingIdList = getGroup.map(group => group.bookingId);
-                const bookings = await Booking.findAll({ where: { id: bookingIdList }, raw: true });
+                const bookings = await Booking.findAll({ 
+                    where: { 
+                        id: bookingIdList,
+                        startTime: {
+                            [Op.gt]: new Date()
+                        }
+                    }, 
+                    raw: true 
+                });
                 res.status(200).json(response_status.list_success(bookings));
             }
             
