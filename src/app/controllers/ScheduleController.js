@@ -53,8 +53,8 @@ class ScheduleController {
 
     async addMentorSlot(req, res) {
         try {
-            const { slotStart, slotEnd, skillId, mentorId, description } = req.body;
-            if (!slotStart || !slotEnd || !skillId || !mentorId) {
+            const { slotStart, skillId, mentorId, description } = req.body;
+            if (!slotStart || !skillId || !mentorId) {
                 return res.status(400).json({ error_code: 1, message: 'Missing required fields' });
             }
 
@@ -73,13 +73,9 @@ class ScheduleController {
             // validate slot start & slot end
             if (new Date(slotStart) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
-            }
-            if(new Date(slotEnd) < new Date()) {
-                return res.status(400).json({ error_code: 1, message: 'Slot end must be in the future' });
-            }
-            if(new Date(slotEnd) < new Date(slotStart)) {
-                return res.status(400).json({ error_code: 1, message: 'Slot end must be greater than slot start' });
-            }
+            } 
+            const slotEnd = new Date(slotStart);
+            slotEnd.setHours(slotEnd.getHours() + 3);
 
             const slot = await MentorSlot.create({
                 slotStart,
@@ -100,8 +96,8 @@ class ScheduleController {
     async updateMentorSlot(req, res) {
         try {
             const slotId = req.params.slotId;
-            const { slotStart, slotEnd, skillId, mentorId, description } = req.body;
-            if (!slotId || !slotStart || !slotEnd || !skillId || !mentorId) {
+            const { slotStart, skillId, mentorId, description } = req.body;
+            if (!slotId || !slotStart || !skillId || !mentorId) {
                 return res.status(400).json({ error_code: 1, message: 'Missing required fields' });
             }
 
@@ -121,12 +117,8 @@ class ScheduleController {
             if (new Date(slotStart) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
             }
-            if(new Date(slotEnd) < new Date()) {
-                return res.status(400).json({ error_code: 1, message: 'Slot end must be in the future' });
-            }
-            if(new Date(slotEnd) < new Date(slotStart)) {
-                return res.status(400).json({ error_code: 1, message: 'Slot end must be greater than slot start' });
-            }
+            const slotEnd = new Date(slotStart);
+            slotEnd.setHours(slotEnd.getHours() + 3);
 
             const slot = await MentorSlot.update({
                 slotStart,

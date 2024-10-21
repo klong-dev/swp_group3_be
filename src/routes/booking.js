@@ -3,8 +3,8 @@ const BookingController = require('../app/controllers/BookingController');
 const Auth = require('../middleware/AuthenticateJWT')
 const router = express.Router();
 
-router.post('/book', Auth, BookingController.book);
-router.get('/list', Auth, BookingController.list);
+router.post('/', BookingController.book);
+router.get('/list/:type/:id', BookingController.list);
 router.get('/get/:id', Auth, BookingController.get);
 router.post('/update/:id', Auth, BookingController.update);
 router.get('/delete/:id', Auth, BookingController.delete);

@@ -59,14 +59,26 @@ class BookingController {
             const bookingData = {
                 mentorId: req.body.mentorId,
                 studentId: req.body.studentId,
+                startTime: req.body.startTime,
                 size: req.body.size,
                 status: 1
             };
-            if (!bookingData.mentorId || !bookingData.size || !bookingData.studentId) {
+            if (!bookingData.mentorId || !bookingData.size || !bookingData.studentId || !bookingData.startTime) {
                 res.status(400).json(response_status.missing_fields);
                 return;
             }
-            const booking = await Booking.create(bookingData);
+
+            // endTime = startTime + 3 hour
+            const endTime = new Date(bookingData.startTime);
+            endTime.setHours(endTime.getHours() + 3);
+
+            const booking = await Booking.create({
+                mentorId: bookingData.mentorId,
+                size: bookingData.size,
+                startTime: bookingData.startTime,
+                endTime: endTime,
+                status: 1
+            });
             const studentGroup = await StudentGroup.create({
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
@@ -82,8 +94,21 @@ class BookingController {
 
     async list(req, res) {
         try {
-            const bookings = await Booking.findAll();
-            res.status(200).json(response_status.list_success(bookings));
+            const { type, id } = req.params;
+            if (!type || !id) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            if (type === 'mentor') {
+                const bookings = await Booking.findAll({ where: { mentorId: id }, raw: true });
+                res.status(200).json(response_status.list_success(bookings));
+            }
+            if (type === 'student') {
+                const getGroup = await StudentGroup.findAll({ where: { studentId: id }, raw: true });
+                const bookingIdList = getGroup.map(group => group.bookingId);
+                const bookings = await Booking.findAll({ where: { id: bookingIdList }, raw: true });
+                res.status(200).json(response_status.list_success(bookings));
+            }
+            
         } catch (error) {
             res.status(400).json(response_status.internal_server_error(error));
         }
