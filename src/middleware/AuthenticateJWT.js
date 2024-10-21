@@ -29,7 +29,7 @@ const authenticateJWT = async (req, res, next) => {
     req.token = token;
     next();
   } catch (error) {
-    return res.status(500).json({ message: 'Internal Server Error', error });
+    return res.status(500).json({ message: 'Internal Server Error', error: error });
   }
 };
 

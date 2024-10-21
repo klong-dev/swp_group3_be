@@ -48,7 +48,7 @@ const response_status = {
     internal_server_error: (error) => {
         return {
             error_code: 7,
-            message: 'Internal server error',
+            message: 'Internal server errors',
             error: error
         }
     }
@@ -67,6 +67,10 @@ class BookingController {
                 return;
             }
 
+            // validate slot start
+            if (new Date(slotStart) < new Date()) {
+                return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
+            } 
             // endTime = startTime + 3 hour
             const endTime = new Date(bookingData.startTime);
             endTime.setHours(endTime.getHours() + 3);
@@ -109,7 +113,7 @@ class BookingController {
             }
             
         } catch (error) {
-            res.status(400).json(response_status.internal_server_error(error));
+            res.status(400).json({ error: error });
         }
     }
 
