@@ -68,7 +68,7 @@ class BookingController {
             }
 
             // validate slot start
-            if (new Date(startTime) < new Date()) {
+            if (new Date(bookingData.startTime) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
             } 
             // endTime = startTime + 3 hour
