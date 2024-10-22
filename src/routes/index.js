@@ -17,6 +17,7 @@ function routes(app) {
   app.use('/booking', booking);
   app.use('/group', group);
   app.use('/schedule', schedule)
+  
 }
 
 module.exports = routes;
