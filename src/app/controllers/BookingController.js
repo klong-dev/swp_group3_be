@@ -92,7 +92,7 @@ class BookingController {
             res.status(200).json(response_status.booking_success({ booking: booking, studentGroup: studentGroup }));
         } catch (error) {
             console.log(error);
-            res.status(400).json(response_status.internal_server_error(error));
+            res.status(500).json(response_status.internal_server_error(error));
         }
     }
 
