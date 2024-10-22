@@ -10,16 +10,10 @@ class FeedbackController {
           console.log(studentId, mentorId, rating, text);
       
           if (!studentId || !mentorId || !rating || !text) {
-            return res.status(400).json({
-              error_code: 1,
-              message: "All fields (studentId, mentorId, rating, text) are required!",
-            });
+            return res.status(400).json({ error_code: 1, message: "All fields (studentId, mentorId, rating, text) are required!"});
           }
           if(rating < 0 || rating > 5){
-            return res.status(400).json({
-                error_code: 1,
-                message: "Rating has been from 1 to 5!"
-            })
+            return res.status(400).json({ error_code: 1, message: "Rating has been from 1 to 5!" })
           }
           const validBooking = await StudentGroup.findOne({
             include: [{
@@ -28,14 +22,9 @@ class FeedbackController {
             }],
             where: { studentId: studentId }
           });
-      
           if (!validBooking) {
-            return res.status(403).json({
-              error_code: 1,
-              message: "Student is not in a group booking with this mentor!",
-            });
+            return res.status(403).json({ error_code: 1, message: "Student is not in a group booking with this mentor!" });
           }
-      
           const formatter = new Intl.DateTimeFormat('vi-VN', {
             year: 'numeric',
             month: '2-digit',
@@ -46,9 +35,7 @@ class FeedbackController {
             hour12: false,
             timeZone: 'Asia/Ho_Chi_Minh'
           });
-      
           const currentDate = new Date();
-      
           const newFeedback = await Feedback.create({
             studentId,
             mentorId,

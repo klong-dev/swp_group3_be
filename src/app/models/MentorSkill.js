@@ -3,22 +3,19 @@ const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 
 const MentorSkill = sequelize.define('mentor_skill', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
   level: {
     type: DataTypes.INTEGER,
     allowNull: true
   },
   mentorId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true  
   },
   skillId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true  
   },
   status: {
     type: DataTypes.INTEGER,
@@ -27,7 +24,6 @@ const MentorSkill = sequelize.define('mentor_skill', {
 }, {
   timestamps: false,
   freezeTableName: true
-
 });
 
 module.exports = MentorSkill;
