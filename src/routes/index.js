@@ -14,6 +14,10 @@ function routes(app) {
   app.use('/mentor', mentor);
   app.use('/admin', admin);
   app.use('/feedback', feedback);
+  app.use('/booking', booking);
+  app.use('/group', group);
+  app.use('/schedule', schedule)
+  
 }
 
 module.exports = routes;
