@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const StudentGroup = require('../models/StudentGroup');
+const { Op } = require('sequelize');
 
 const response_status = {
     missing_fields: {
@@ -48,7 +49,7 @@ const response_status = {
     internal_server_error: (error) => {
         return {
             error_code: 7,
-            message: 'Internal server error',
+            message: 'Internal server errors',
             error: error
         }
     }
@@ -60,21 +61,24 @@ class BookingController {
                 mentorId: req.body.mentorId,
                 studentId: req.body.studentId,
                 startTime: req.body.startTime,
-                size: req.body.size,
                 status: 1
             };
-            if (!bookingData.mentorId || !bookingData.size || !bookingData.studentId || !bookingData.startTime) {
+            if (!bookingData.mentorId || !bookingData.studentId || !bookingData.startTime) {
                 res.status(400).json(response_status.missing_fields);
                 return;
             }
 
+            // validate slot start
+            if (new Date(bookingData.startTime) < new Date()) {
+                return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
+            } 
             // endTime = startTime + 3 hour
             const endTime = new Date(bookingData.startTime);
             endTime.setHours(endTime.getHours() + 3);
 
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
-                size: bookingData.size,
+                size: 999,
                 startTime: bookingData.startTime,
                 endTime: endTime,
                 status: 1
@@ -99,18 +103,32 @@ class BookingController {
                 return res.status(400).json(response_status.missing_fields);
             }
             if (type === 'mentor') {
-                const bookings = await Booking.findAll({ where: { mentorId: id }, raw: true });
+                const bookings = await Booking.findAll({ where: { mentorId: id,
+                        startTime: {
+                            [Op.gt]: new Date()
+                        }
+                    },
+                    raw: true
+                });
                 res.status(200).json(response_status.list_success(bookings));
             }
             if (type === 'student') {
-                const getGroup = await StudentGroup.findAll({ where: { studentId: id }, raw: true });
+                const getGroup = await StudentGroup.findAll({ where: { studentId: id, }, raw: true });
                 const bookingIdList = getGroup.map(group => group.bookingId);
-                const bookings = await Booking.findAll({ where: { id: bookingIdList }, raw: true });
+                const bookings = await Booking.findAll({ 
+                    where: { 
+                        id: bookingIdList,
+                        startTime: {
+                            [Op.gt]: new Date()
+                        }
+                    }, 
+                    raw: true 
+                });
                 res.status(200).json(response_status.list_success(bookings));
             }
             
         } catch (error) {
-            res.status(400).json(response_status.internal_server_error(error));
+            res.status(400).json({ error: error });
         }
     }
 
