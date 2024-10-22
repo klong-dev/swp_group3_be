@@ -24,7 +24,6 @@ const MentorSkill = sequelize.define('mentor_skill', {
 }, {
   timestamps: false,
   freezeTableName: true
-
 });
 
 module.exports = MentorSkill;
