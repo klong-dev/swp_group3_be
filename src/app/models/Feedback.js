@@ -6,7 +6,6 @@ const Feedback = sequelize.define('feedback', {
   mentorId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    primaryKey: true
   },
   studentId: {
     type: DataTypes.INTEGER,

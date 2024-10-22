@@ -6,7 +6,7 @@ const Mentor = sequelize.define("mentor", {
   accountId: {
     type: DataTypes.STRING,
     allowNull: false,
-    primaryKey: true
+    primaryKey: true,
   },
   fullName: {
     type: DataTypes.STRING,

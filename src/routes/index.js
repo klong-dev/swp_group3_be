@@ -1,11 +1,13 @@
 const mentor = require('./mentor')
-const google = require('./account/google-auth')
+const student = require('./student')
 const admin = require('./admin')
+const google = require('./account/google-auth')
 const feedback = require('./feedback')
 
 function routes(app) {
   app.use('/auth/google', google);
-  app.use('/auth/google/callback', google); 
+  app.use('/auth/google/callback', google);
+  app.use('/student', student);
   app.use('/mentor', mentor);
   app.use('/admin', admin);
   app.use('/feedback', feedback);

@@ -4,6 +4,7 @@ const sequelize = db.sequelize;
 const Student = sequelize.define('student', {
   accountId: {
     type: DataTypes.STRING,
+    primaryKey: true,
     allowNull: false
   },
   fullName: {
@@ -21,6 +22,11 @@ const Student = sequelize.define('student', {
   imgPath: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  isMentor: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
   },
   status: {
     type: DataTypes.INTEGER,

@@ -14,12 +14,11 @@ class SearchController {
     try {
       const { skill, page = 1, name = "", rating = 0 } = req.query;
       const limit = 10;
-      let whereCondition = {};
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      console.log(skill);
 
-      if (name && name.trim() !== "") {
-        whereCondition.fullName = {
-          [Op.like]: `%${name.trim()}%`,
-        };
+      if (!skill && !name || !skill.length == 0 && !name ) {
+        return res.json([]);
       }
       if (skill && !(Array.isArray(skill) && skill.length === 0)) {
         const skillIds = Array.isArray(skill) ? skill : [skill];

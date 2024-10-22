@@ -16,6 +16,14 @@ const Booking = sequelize.define('booking', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  startTime: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
+  endTime: {
+    type: DataTypes.DATE,
+    allowNull: false
+  },
   status: {
     type: DataTypes.INTEGER,
     allowNull: false,
