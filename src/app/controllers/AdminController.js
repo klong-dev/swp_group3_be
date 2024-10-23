@@ -1,6 +1,9 @@
 const Mentor = require('../models/Mentor')
 const Student = require('../models/Student')
 const Semester = require('../models/Semester')
+const Admin = require('../models/Admin')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 class AdminController {
   async showMentorList(req, res) {
@@ -48,7 +51,7 @@ class AdminController {
       });
       return res.json({ error_code: 0, message: "Promotion successful", mentor: newMentor });
     } catch (error) {
-      return res.status(500).json({ error_code: 1, error});
+      return res.status(500).json({ error_code: 1, error });
     }
   }
 
@@ -287,6 +290,31 @@ class AdminController {
       return res.json({ error_code: 0, studentList });
     } catch (error) {
       return res.status(500).json({ error_code: 1, error });
+    }
+  }
+
+  async validate(req, res, next) {
+    try {
+      const { username, password } = req.body;
+      const user = await Admin.findOne({ where: { username } });
+
+      if (!user) {
+        let wrongUsernameMsg = "Username or password is not correct";
+        return res.json({ error_code: 1, message: wrongUsernameMsg })
+      }
+
+      const valid = await bcrypt.compare(password, user.password);
+      if (valid) {
+        const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
+          expiresIn: '1h',
+        });
+        return res.json({ "error_code": 0, token });
+      } else {
+        let wrongPasswordMsg = "Password is not correct";
+        return res.json({ "error_code": 2, "message": wrongPasswordMsg });
+      }
+    } catch (error) {
+      return res.json({ "error_code": 3, error });
     }
   }
 }
