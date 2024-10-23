@@ -1,7 +1,7 @@
 const express = require('express');
-const router = express.Router();
 const AdminController = require('../app/controllers/AdminController');
 const Auth = require('../middleware/AuthenticateJWT')
+const router = express.Router();
 
 router.post('/add-skill', AdminController.addSkill);
 router.get('/mentor-list', Auth, AdminController.showMentorList);
