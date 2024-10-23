@@ -12,171 +12,150 @@ class SearchController {
   // 4 params: skills,search, rating
   getMentors = async (req, res) => {
     try {
-      const { skill, page = 1, name = "", rating = 0 } = req.query;
-      const limit = 10;
-      const offset = (parseInt(page) - 1) * parseInt(limit);
-      console.log(skill);
+        const { skill, page = 1, name = "", rating } = req.query;
+        const limit = 10;
 
-      if (!skill && !name || !skill.length == 0 && !name ) {
-        return res.json([]);
-      }
-      if (skill && !(Array.isArray(skill) && skill.length === 0)) {
-        const skillIds = Array.isArray(skill) ? skill : [skill];
+        let whereCondition = {
+            status: 1
+        };
+        if (name && name.trim() !== "") {
+            whereCondition.fullName = {
+                [Op.like]: `%${name.trim()}%`,
+            };
+        }
+        if (skill && Array.isArray(skill) && skill.length > 0) {
+            const mentorSkills = await MentorSkill.findAll({
+                where: { 
+                    skillId: skill,
+                    status: 1
+                }
+            });
+            const mentorSkillCount = mentorSkills.reduce((acc, ms) => {
+                acc[ms.mentorId] = (acc[ms.mentorId] || 0) + 1;
+                return acc;
+            }, {});
+            const targetMentorIds = Object.entries(mentorSkillCount)
+                .filter(([_, count]) => count === skill.length)
+                .map(([mentorId]) => mentorId);
+
+            if (targetMentorIds.length > 0) {
+                whereCondition.accountId = targetMentorIds;
+            } else {
+                return res.json({
+                    error_code: 0,
+                    totalMentors: 0,
+                    totalPages: 0,
+                    currentPage: parseInt(page),
+                    mentors: [],
+                });
+            }
+        }
+        const { rows: mentors } = await Mentor.findAndCountAll({
+            where: whereCondition,
+        });
+
+        if (mentors.length === 0) {
+            return res.json({
+                error_code: 0,
+                totalMentors: 0,
+                totalPages: 0,
+                currentPage: parseInt(page),
+                mentors: [],
+            });
+        }
+        const mentorIds = mentors.map((mentor) => mentor.accountId);
+        const feedbacks = await Feedback.findAll({
+            where: {
+                mentorId: mentorIds,
+                status: 1
+            },
+            order: [["createdAt", "DESC"]],
+        });
 
         const mentorSkills = await MentorSkill.findAll({
-          where: {
-            skillId: skillIds,
-          },
-          attributes: ["mentorId", "skillId"],
+            where: {
+                mentorId: mentorIds,
+                status: 1
+            },
         });
-
-        // Count how many matching skills each mentor has
-        const mentorSkillsCount = mentorSkills.reduce((acc, ms) => {
-          acc[ms.mentorId] = (acc[ms.mentorId] || 0) + 1;
-          return acc;
+        const skillIds = [...new Set(mentorSkills.map((ms) => ms.skillId))];
+        const skills = await Skill.findAll({
+            where: {
+                id: skillIds,
+                status: 1
+            },
+        });
+        const skillsMap = skills.reduce((acc, skill) => {
+            acc[skill.id] = skill.name;
+            return acc;
+        }, {});
+        const mentorSkillsMap = mentorSkills.reduce((acc, ms) => {
+            if (!acc[ms.mentorId]) {
+                acc[ms.mentorId] = [];
+            }
+            if (skillsMap[ms.skillId]) {
+                acc[ms.mentorId].push(skillsMap[ms.skillId]);
+            }
+            return acc;
         }, {});
 
-        // Filter mentors who have all selected skills (count equals total selected skills)
-        const targetMentorIds = Object.entries(mentorSkillsCount)
-          .filter(([_, count]) => count === skillIds.length)
-          .map(([mentorId]) => mentorId);
-
-        if (targetMentorIds.length > 0) {
-          // Combine name search with skills filter if name search exists
-          if (whereCondition.fullName) {
-            whereCondition = {
-              [Op.and]: [
-                { fullName: whereCondition.fullName },
-                { accountId: targetMentorIds },
-              ],
+        let mentorsWithDetails = mentors.map((mentor) => {
+            const mentorFeedbacks = feedbacks.filter(
+                (f) => f.mentorId === mentor.accountId
+            );
+            
+            const ratings = mentorFeedbacks.map(f => f.rating).filter(r => r != null);
+            const averageRating = ratings.length > 0 
+                ? ratings.reduce((a, b) => a + b, 0) / ratings.length 
+                : 0;
+            const {accountId, fullName, email, point, imgPath, status} = mentor;
+            return {
+                accountId,
+                fullName,
+                email,
+                point,
+                imgPath,
+                status,
+                averageRating: parseFloat(averageRating.toFixed(1)),
+                ratingCount: ratings.length,
+                skills: mentorSkillsMap[mentor.accountId] || [],
             };
-          } else {
-            whereCondition.accountId = targetMentorIds;
-          }
-        } else {
-          return res.json({
-            error_code: 0,
-            totalMentors: 0,
-            totalPages: 0,
-            currentPage: parseInt(page),
-            mentors: [],
-          });
-        }
-      }
-
-      const { rows: allMentors } = await Mentor.findAndCountAll({
-        where: whereCondition,
-      });
-
-      if (allMentors.length === 0) {
-        return res.json({
-          error_code: 0,
-          totalMentors: 0,
-          totalPages: 0,
-          currentPage: parseInt(page),
-          mentors: [],
         });
-      }
-      const mentorIds = allMentors.map((mentor) => mentor.accountId);
 
-      const feedbacks = await Feedback.findAll({
-        where: { mentorId: mentorIds },
-        order: [["createdAt", "DESC"]],
-      });
-
-      const mentorSkills = await MentorSkill.findAll({
-        where: { mentorId: mentorIds },
-      });
-
-      const skillIds = [...new Set(mentorSkills.map((ms) => ms.skillId))];
-
-      const skills = await Skill.findAll({
-        where: { id: skillIds },
-      });
-
-      // Create skill name lookup map for better performance
-      const skillsMap = skills.reduce((acc, skill) => {
-        acc[skill.id] = skill.name;
-        return acc;
-      }, {});
-
-      // Group skills by mentor for easy access
-      const mentorSkillsMap = mentorSkills.reduce((acc, ms) => {
-        if (!acc[ms.mentorId]) {
-          acc[ms.mentorId] = [];
+        //filter base on rating
+        if (rating) {
+            mentorsWithDetails = mentorsWithDetails.filter(
+                mentor => mentor.averageRating >= parseFloat(rating)
+            );
         }
-        if (skillsMap[ms.skillId]) {
-          acc[ms.mentorId].push(skillsMap[ms.skillId]);
-        }
-        return acc;
-      }, {});
+        mentorsWithDetails.sort((a, b) => {
+            if (b.averageRating !== a.averageRating) {
+                return b.averageRating - a.averageRating;
+            }
+            if (b.ratingCount !== a.ratingCount) {
+                return b.ratingCount - a.ratingCount;
+            }
+            return b.point - a.point;
+        });
 
-      let mentorsWithDetails = allMentors.map((mentor) => {
-        const mentorFeedbacks = feedbacks.filter(
-          (f) => f.mentorId === mentor.accountId
+        const startIndex = (parseInt(page) - 1) * parseInt(limit);
+        const paginatedMentors = mentorsWithDetails.slice(
+            startIndex,
+            startIndex + parseInt(limit)
         );
-        const averageRating = calculateAverageRating(mentorFeedbacks);
-        const {accountId, fullName, email, point, imgPath, status} = mentor;
-        return {
-          accountId,
-          fullName,
-          email,
-          point,
-          imgPath,
-          status,
-          averageRating,
-          ratingCount: mentorFeedbacks.length,
-          skills: mentorSkillsMap[mentor.accountId] || [],
-        };
-      });
 
-      const parsedRating = parseFloat(rating) || 0;
-      mentorsWithDetails = mentorsWithDetails
-        .filter((mentor) => mentor.averageRating >= parsedRating)
-        // Sort by rating first, then by number of ratings, finally by points
-        .sort((a, b) => {
-          if (b.averageRating !== a.averageRating) {
-            return b.averageRating - a.averageRating;
-          }
-          if (b.ratingCount !== a.ratingCount) {
-            return b.ratingCount - a.ratingCount;
-          }
-          return b.point - a.point;
-        });
-
-      if (mentorsWithDetails.length === 0) {
         return res.json({
-          error_code: 0,
-          totalMentors: 0,
-          totalPages: 0,
-          currentPage: parseInt(page),
-          mentors: [],
+            error_code: 0,
+            totalMentors: mentorsWithDetails.length,
+            totalPages: Math.ceil(mentorsWithDetails.length / limit),
+            currentPage: parseInt(page),
+            mentors: paginatedMentors,
         });
-      }
-
-      const startIndex = (parseInt(page) - 1) * parseInt(limit);
-      const paginatedMentors = mentorsWithDetails.slice(
-        startIndex,
-        startIndex + parseInt(limit)
-      );
-
-      return res.json({
-        error_code: 0,
-        totalMentors: mentorsWithDetails.length,
-        totalPages: Math.ceil(mentorsWithDetails.length / limit),
-        currentPage: parseInt(page),
-        mentors: paginatedMentors,
-      });
     } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-        error_code: 1,
-        message: "ERROR",
-        error: error.message,
-      });
+        console.error(error);
+        return res.status(500).json({ error_code: 1, error });
     }
-  };
-
+};
 
   //1
   loadProfile = async (req, res) => {
