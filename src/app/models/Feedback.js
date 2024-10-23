@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/index"); // Adjust the path if needed
+const db = require("../../config/db/index"); 
 const sequelize = db.sequelize;
 
 const Feedback = sequelize.define('feedback', {
