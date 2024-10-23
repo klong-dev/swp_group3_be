@@ -9,7 +9,7 @@ const { formatTime, formatter, calculateAverageRating } = require("../../utils/M
 
 class SearchController {
 
-  // 4 params: skills,search, rating
+  // 4 params: skills,search, rating, page
   getMentors = async (req, res) => {
     try {
         const { skill, page = 1, name = "", rating } = req.query;
@@ -160,11 +160,8 @@ class SearchController {
   //1
   loadProfile = async (req, res) => {
     try {
-      const { mentorId } = req.query;
-      console.log(mentorId);
-      
+      const { mentorId } = req.query;    
       const mentor = await Mentor.findByPk(mentorId);
-
       if (!mentor) {
         return res.status(404).json({ error_code: 1, message: "Mentor not found" });
       }
@@ -198,7 +195,6 @@ class SearchController {
     }
   };
 
-
   //1
   getListFeedback = async (req, res) => {
     try {
@@ -229,7 +225,6 @@ class SearchController {
           fullName: "Unknown",
           imgPath: null,
         };
-      
       
         return {
           ...feedback.get({ plain: true }),

@@ -1,7 +1,7 @@
 const  Feedback  = require("../models/Feedback");
 const StudentGroup = require("../models/StudentGroup");
 const Booking = require("../models/Booking");
-
+const { formatTime, formatter} = require("../../utils/MentorUtils");
 
 class FeedbackController {
     submitFeedback = async (req, res) => {
@@ -25,16 +25,7 @@ class FeedbackController {
           if (!validBooking) {
             return res.status(403).json({ error_code: 1, message: "Student is not in a group booking with this mentor!" });
           }
-          const formatter = new Intl.DateTimeFormat('vi-VN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Ho_Chi_Minh'
-          });
+
           const currentDate = new Date();
           const newFeedback = await Feedback.create({
             studentId,
@@ -48,21 +39,13 @@ class FeedbackController {
       
           const formattedFeedback = {
             ...newFeedback.get({ plain: true }),
-            createdAt: formatter.format(newFeedback.createdAt).replace(/\//g, '-'),
-            updatedAt: formatter.format(newFeedback.updatedAt).replace(/\//g, '-')
+            createdAt: formatTime(newFeedback.createdAt, formatter),
+            updatedAt: formatTime(newFeedback.updatedAt, formatter)
           };
-          return res.status(200).json({
-            error_code: 0,
-            message: "Feedback submitted successfully",
-            feedback: formattedFeedback,
-          });
+          return res.status(200).json({ error_code: 0, message: "Feedback submitted successfully",feedback: formattedFeedback });
         } catch (error) {
           console.error(error);
-          return res.status(500).json({
-            error_code: 1,
-            message: "An error occurred while submitting feedback",
-            error: error.message,
-          });
+          return res.status(500).json({ error_code: 1, message: "An error occurred while submitting feedback", error });
         }
       };
 }
