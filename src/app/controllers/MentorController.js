@@ -7,9 +7,8 @@ const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
 const Booking = require("../models/Booking");
 const MentorSlot = require("../models/MentorSlot");
+const StudentGroup = require("../models/StudentGroup");
 const {
-  formatTime,
-  formatter,
   calculateAverageRating,
   DateTimeFormat,
 } = require("../../utils/MentorUtils");
@@ -129,19 +128,27 @@ class SearchController {
         });
       }
 
-      const mentorAvailableIds = new Set( availableSlots.map((slot) => slot.mentorId) );
+      const mentorAvailableIds = new Set(
+        availableSlots.map((slot) => slot.mentorId)
+      );
 
-      let mentorsWithDetails = mentors.map((mentor) => {
+      let mentorsWithDetails = mentors
+        .map((mentor) => {
           const mentorFeedbacks = feedbacks.filter(
             (f) => f.mentorId === mentor.accountId
           );
 
           const averageRating = calculateAverageRating(mentorFeedbacks);
-          if ( dates && dates.length > 0 && !mentorAvailableIds.has(mentor.accountId)) {
+          if (
+            dates &&
+            dates.length > 0 &&
+            !mentorAvailableIds.has(mentor.accountId)
+          ) {
             return null;
           }
 
-          const mentorSlots = availableSlots
+          const mentorSlots =
+            availableSlots
               .filter((slot) => slot.mentorId === mentor.accountId)
               .map((slot) => ({
                 slotStart: DateTimeFormat(slot.slotStart),
@@ -150,7 +157,7 @@ class SearchController {
                 size: slot.size,
                 description: slot.description,
               })) || [];
-          const {accountId, fullName, email, point, imgPath, status} = mentor;
+          const { accountId, fullName, email, point, imgPath, status } = mentor;
           return {
             accountId,
             fullName,
@@ -167,8 +174,10 @@ class SearchController {
         .filter((mentor) => mentor !== null);
 
       mentorsWithDetails.sort((a, b) => {
-        const aNearestSlot = a.availableSlots.length > 0 ? a.availableSlots[0].slotStart : null;
-        const bNearestSlot = b.availableSlots.length > 0 ? b.availableSlots[0].slotStart : null;
+        const aNearestSlot =
+          a.availableSlots.length > 0 ? a.availableSlots[0].slotStart : null;
+        const bNearestSlot =
+          b.availableSlots.length > 0 ? b.availableSlots[0].slotStart : null;
         if (aNearestSlot && bNearestSlot) {
           return aNearestSlot - bNearestSlot;
         }
@@ -218,7 +227,15 @@ class SearchController {
         where: { id: skillIds },
       });
       const skillNames = skills.map((skill) => skill.name);
-      const {accountId, fullName, description, email, point, imgPath, status } = mentor;
+      const {
+        accountId,
+        fullName,
+        description,
+        email,
+        point,
+        imgPath,
+        status,
+      } = mentor;
       const mentorWithRating = {
         accountId,
         fullName,
@@ -245,7 +262,9 @@ class SearchController {
         where: { mentorId },
         order: [["createdAt", "DESC"]],
       });
-      const studentIds = [...new Set(feedbacks.map((feedback) => feedback.studentId))];
+      const studentIds = [
+        ...new Set(feedbacks.map((feedback) => feedback.studentId)),
+      ];
       const students = await Student.findAll({
         where: { accountId: studentIds },
         attributes: ["accountId", "fullName", "imgPath"],
@@ -324,6 +343,34 @@ class SearchController {
       return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+
+  ratingStudent = async (req, res) => {
+    try {
+        const { bookingId, rating } = req.body;
+
+        if (!bookingId || !rating) {
+            return res.status(400).json({ error_code: 1, message: 'BookingId and rating are required'
+            });
+        }
+        const studentBookings = await StudentGroup.findAll({
+            where: { bookingId }
+        });
+
+        if (!studentBookings.length) {
+            return res.status(404).json({ error_code: 1, error });
+        }
+        const updatePromises = studentBookings.map(studentBookings => 
+          studentBookings.update({ rating })
+        );      
+        await Promise.all(updatePromises);
+        return res.status(200).json({ error_code: 0 });
+
+    } catch (error) {
+        console.error('Error rating students:', error);
+        return res.status(500).json({ error_code: 1, error });
+    }
+  };
+
 }
 
 module.exports = new SearchController();
