@@ -10,14 +10,13 @@ passport.use(new GoogleStrategy({
 },
   async (accessToken, refreshToken, profile, done) => {
     try {
-      if (profile._json.hd !== 'fpt.edu.vn') {
-        return done(null, false, { message: 'Unauthorized domain' });
-      }
+      // if (profile._json.hd !== 'fpt.edu.vn') {
+      //   return done(null, false, { message: 'Unauthorized domain' });
+      // }
       const existingStudent = await Student.findOne({ where: { accountId: profile.id } });
       if (existingStudent) {
         return done(null, existingStudent);
       }
-      // if (profile._json.hd === 'fpt.edu.vn') {
       const newStudent = await Student.create({
         accountId: profile.id,
         email: profile.emails[0].value,
@@ -28,7 +27,6 @@ passport.use(new GoogleStrategy({
         status: 1,
       });
       done(null, newStudent);
-      // }
     } catch (err) {
       done(err, null);
     }
