@@ -15,10 +15,10 @@ class ItemController{
             const totalPages = Math.ceil(listItem.count / limit);
             return res.status(200).json({
                 error_code: 0,
-                listItem: listItem.rows,
                 totalItems: listItem.count,
                 totalPages: totalPages,
-                currentPage: page
+                currentPage: page,
+                listItem: listItem.rows
             });
         } catch (error) {
             console.log(error);
