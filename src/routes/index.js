@@ -1,6 +1,7 @@
 const mentor = require('./mentor')
 const student = require('./student')
 const admin = require('./admin')
+const mail = require('./mail')
 const google = require('./account/google-auth')
 const feedback = require('./feedback')
 const booking = require('./booking')
@@ -17,6 +18,7 @@ function routes(app) {
   app.use('/booking', booking);
   app.use('/group', group);
   app.use('/schedule', schedule)
+  app.use('/mail', mail);
   
 }
 
