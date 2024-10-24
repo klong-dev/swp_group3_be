@@ -63,12 +63,12 @@ class StudentController {
       });
       const mentorSkills = await Promise.all(
         skills.map(async (skill) => {
-          const { skillId, level, status } = skill;
+          const { skillId, level } = skill;
           return await MentorSkill.create({
             skillId,
             mentorId: applyingMentor.id,
             level: level || 1,
-            status: status || 1,
+            status: 1,
           });
         })
       );
