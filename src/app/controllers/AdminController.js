@@ -303,7 +303,8 @@ class AdminController {
         return res.json({ error_code: 1, message: wrongUsernameMsg })
       }
 
-      const valid = await bcrypt.compare(password, user.password);
+      // const valid = await bcrypt.compare(password, user.password);
+      const valid = password === user.password
       if (valid) {
         const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
           expiresIn: '1h',
