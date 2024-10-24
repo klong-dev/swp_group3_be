@@ -137,10 +137,8 @@ class SearchController {
           );
 
           const averageRating = calculateAverageRating(mentorFeedbacks);
-
-          // Chỉ bao gồm những mentor có slot khả dụng nếu có filter theo dates
           if ( dates && dates.length > 0 && !mentorAvailableIds.has(mentor.accountId)) {
-            return null; // Không bao gồm mentor nếu không có slot
+            return null;
           }
 
           const mentorSlots = availableSlots
