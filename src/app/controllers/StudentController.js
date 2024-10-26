@@ -11,7 +11,7 @@ class StudentController {
       const student = await Student.findOne({ where: { accountId } })
       return res.json({ "error_code": 0, "message": student });
     } catch (error) {
-      return res.json({ "error_code": 500, "message": error });
+      return res.json({ "error_code": 500, error: error.message });
     }
   }
 
@@ -31,7 +31,7 @@ class StudentController {
       res.json({ "error_code": 0, user: validUser, token })
     } catch (error) {
       console.log(error);
-      res.json({ "error_code": 500, error });
+      res.json({ "error_code": 500, error: error.message });
     }
   }
 
@@ -63,19 +63,31 @@ class StudentController {
       });
       const mentorSkills = await Promise.all(
         skills.map(async (skill) => {
-          const { skillId, level, status } = skill;
+          const { skillId, level } = skill;
           return await MentorSkill.create({
             skillId,
             mentorId: applyingMentor.id,
             level: level || 1,
-            status: status || 1,
+            status: 1,
           });
         })
       );
       return res.status(201).json({ error_code: 0, applyingMentor, mentorSkills });
     } catch (error) {
       console.error("Error applying to be a mentor:", error);
-      return res.status(500).json({ error_code: 4, message: error });
+      return res.status(500).json({ error_code: 4, error: error.message });
+    }
+  }
+
+  async applyingMentors(req, res) {
+    try {
+      const applyingMentors = await Mentor.findAll({ where: { status: 2 } });
+      if (!applyingMentors || applyingMentors.length === 0) {
+        return res.status(404).json({ error_code: 1, message: "No student applying" });
+      }
+      return res.status(200).json({ error_code: 0, applyingMentors });
+    } catch (error) {
+      return res.status(500).json({ error_code: 3, error: error.message });
     }
   }
 
