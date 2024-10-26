@@ -168,9 +168,9 @@ class BookingController {
             }
             // update booking status to confirmed
             Booking.update({ status: 2 }, { where: { id: booking.id } });
-            return res.status(200).json(response_status.booking_success({ booking: booking }));
+            return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         } catch (error) {
-            return res.status(500).json(error);
+            return res.status(500).json({ error_code: 5, error: error });
         }
     }
 
