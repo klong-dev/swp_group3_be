@@ -2,6 +2,7 @@ const Mentor = require('../models/Mentor')
 const Student = require('../models/Student')
 const Semester = require('../models/Semester')
 const Admin = require('../models/Admin')
+const MentorSkill = require('../models/MentorSkill')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
@@ -15,9 +16,9 @@ class AdminController {
         where:
           { status: 1 },
         include: {
-          model: Skill,           
-          attributes: ['name'], 
-          through: { attributes: [] }, 
+          model: Skill,
+          attributes: ['name'],
+          through: { attributes: [] },
         },
       });
       return res.json({ error_code: 0, mentorList });
