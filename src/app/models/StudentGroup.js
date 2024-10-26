@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 const Booking = require('./Booking');
-const StudentGroup = sequelize.define('student_group', {
+const StudentGroup = sequelize.define('student_booking', {
   bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,

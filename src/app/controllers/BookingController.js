@@ -1,6 +1,10 @@
 const Booking = require('../models/Booking');
 const StudentGroup = require('../models/StudentGroup');
+const Student = require('../models/Student');
+const MentorSlot = require('../models/MentorSlot');
 const { Op } = require('sequelize');
+const Semester = require('../models/Semester');
+const Mentor = require('../models/Mentor');
 
 const response_status = {
     missing_fields: {
@@ -54,6 +58,12 @@ const response_status = {
         }
     }
 }
+
+/*
+    status 0: inactive
+    status 1: pending
+    status 2: confirmed
+*/
 class BookingController {
     async book(req, res) {
         try {
@@ -68,20 +78,57 @@ class BookingController {
                 return;
             }
 
+            // ================ LOAD AND VALIDATE MODEL =============== //
+            // check if student and mentor exist
+            const student = await Student.findByPk(bookingData.studentId);
+            if (!student) {
+                return res.status(400).json({ error_code: 1, message: 'Student not found' });
+            }
+            // check if mentor exist
+            const mentor = await Mentor.findByPk(bookingData.mentorId);
+            if (!mentor) {
+                return res.status(400).json({ error_code: 1, message: 'Mentor not found' });
+            }
+            // get latest active semester
+            const semester = await Semester.findOne({ order: [['id', 'DESC']], where: { status: 1 } });
+            if (!semester) {
+                return res.status(400).json({ error_code: 1, message: 'No active semester' });
+            }
+            // =============================== //
+
             // validate slot start
             if (new Date(bookingData.startTime) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
-            } 
-            // endTime = startTime + 3 hour
+            }
+            bookingData.startTime = new Date(bookingData.startTime);
+            // endTime = startTime + slotDuration (hour)
             const endTime = new Date(bookingData.startTime);
-            endTime.setHours(endTime.getHours() + 3);
+            endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
+            const availableSlot = await MentorSlot.findOne({
+                where: {
+                    mentorId: bookingData.mentorId,
+                    slotStart: bookingData.startTime,
+                }
+            });
+            const isavailable = availableSlot && availableSlot.status === 1;
+            if (isavailable) {
+                // update slot status to booked
+                MentorSlot.update({ status: 0 }, { where: { id: availableSlot.id } });
+            }
+            
+            // check if student has enough point
+            if (student.point < semester.defaultPoint) {
+                return res.status(400).json({ error_code: 1, message: 'Not enough point' });
+            }
+            // minus student point by semester default point
+            Student.update({point: student.point - semester.slotCost}, { where: { accountId: bookingData.studentId } });
 
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
                 size: 999,
                 startTime: bookingData.startTime,
                 endTime: endTime,
-                status: 1
+                status: 1 + (isavailable ? 1 : 0) // read the status above
             });
             const studentGroup = await StudentGroup.create({
                 bookingId: booking.id,
@@ -89,10 +136,33 @@ class BookingController {
                 role: 1,
                 status: 1
             });
-            res.status(200).json(response_status.booking_success({ booking: booking, studentGroup: studentGroup }));
+            res.status(200).json(response_status.booking_success({ booking: booking, studentGroup: studentGroup}));
         } catch (error) {
             console.log(error);
             res.status(500).json(response_status.internal_server_error(error));
+        }
+    }
+
+    async confirm(req, res) {
+        try {
+            if (!req.body.bookingId) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            const booking = await Booking.findByPk(req.body.bookingId);
+            if (!booking) {
+                return res.status(400).json(response_status.data_not_found);
+            }
+            if (booking.status === 2) {
+                return res.status(400).json({ error_code: 1, message: 'Booking already confirmed' });
+            }
+            if (booking.status === 0) {
+                return res.status(400).json({ error_code: 1, message: 'Booking is inactive' });
+            }
+            // update booking status to confirmed
+            Booking.update({ status: 2 }, { where: { id: booking.id } });
+            return res.status(200).json(response_status.booking_success({ booking: booking }));
+        } catch (error) {
+            return res.status(500).json(error);
         }
     }
 
