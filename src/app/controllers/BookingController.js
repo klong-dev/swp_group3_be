@@ -117,7 +117,7 @@ class BookingController {
             }
             
             // check if student has enough point
-            if (student.point < semester.defaultPoint) {
+            if (student.point < semester.slotCost) {
                 return res.status(400).json({ error_code: 1, message: 'Not enough point' });
             }
             // minus student point by semester default point
@@ -129,14 +129,22 @@ class BookingController {
                 startTime: bookingData.startTime,
                 endTime: endTime,
                 status: 1 + (isavailable ? 1 : 0) // read the status above
-            });
+            },
+            );
             const studentGroup = await StudentGroup.create({
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
                 role: 1,
                 status: 1
             });
-            res.status(200).json(response_status.booking_success({ booking: booking, studentGroup: studentGroup}));
+            res.status(200).json(response_status.booking_success({ 
+                booking: {
+                    ...booking.toJSON(),
+                    startTime: bookingData.startTime,
+                    endTime: endTime
+                }, 
+                studentGroup: studentGroup
+            }));
         } catch (error) {
             console.log(error);
             res.status(500).json(response_status.internal_server_error(error));
@@ -192,6 +200,7 @@ class BookingController {
                             [Op.gt]: new Date()
                         }
                     }, 
+                    order: [['startTime', 'ASC']],
                     raw: true 
                 });
                 res.status(200).json(response_status.list_success(bookings));
