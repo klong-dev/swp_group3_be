@@ -8,8 +8,8 @@ const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 
-Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentor_id' });
-Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skill_id' });
+Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
+Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
   async addSkill(req, res) {
     try {
