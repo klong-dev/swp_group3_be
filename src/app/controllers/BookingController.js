@@ -6,6 +6,8 @@ const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
 
+Booking.associate({ Mentor });
+
 const response_status = {
     missing_fields: {
         error_code: 1,
@@ -115,13 +117,13 @@ class BookingController {
                 // update slot status to booked
                 MentorSlot.update({ status: 0 }, { where: { id: availableSlot.id } });
             }
-            
+
             // check if student has enough point
             if (student.point < semester.slotCost) {
                 return res.status(400).json({ error_code: 1, message: 'Not enough point' });
             }
             // minus student point by semester default point
-            Student.update({point: student.point - semester.slotCost}, { where: { accountId: bookingData.studentId } });
+            Student.update({ point: student.point - semester.slotCost }, { where: { accountId: bookingData.studentId } });
 
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
@@ -137,12 +139,12 @@ class BookingController {
                 role: 1,
                 status: 1
             });
-            res.status(200).json(response_status.booking_success({ 
+            res.status(200).json(response_status.booking_success({
                 booking: {
                     ...booking.toJSON(),
                     startTime: bookingData.startTime,
                     endTime: endTime
-                }, 
+                },
                 studentGroup: studentGroup
             }));
         } catch (error) {
@@ -181,7 +183,9 @@ class BookingController {
                 return res.status(400).json(response_status.missing_fields);
             }
             if (type === 'mentor') {
-                const bookings = await Booking.findAll({ where: { mentorId: id,
+                const bookings = await Booking.findAll({
+                    where: {
+                        mentorId: id,
                         startTime: {
                             [Op.gt]: new Date()
                         }
@@ -191,75 +195,84 @@ class BookingController {
                 res.status(200).json(response_status.list_success(bookings));
             }
             if (type === 'student') {
-                const getGroup = await StudentGroup.findAll({ where: { studentId: id, }, raw: true });
+                const getGroup = await StudentGroup.findAll({
+                    where: { studentId: id },
+                    raw: true
+                });
                 const bookingIdList = getGroup.map(group => group.bookingId);
-                const bookings = await Booking.findAll({ 
-                    where: { 
+
+                const bookings = await Booking.findAll({
+                    where: {
                         id: bookingIdList,
                         startTime: {
                             [Op.gt]: new Date()
                         }
-                    }, 
-                    order: [['startTime', 'ASC']],
-                    raw: true 
+                    },
+                    include: [
+                        {
+                            model: Mentor,
+                            as: 'mentor'
+                        }
+                    ],
+                    order: [['startTime', 'ASC']]
                 });
                 res.status(200).json(response_status.list_success(bookings));
             }
-            
+
         } catch (error) {
-            res.status(400).json({ error: error });
+            res.status(400).json({ error: error.message });
         }
     }
 
-  async get(req, res) {
-    try {
-      if (!req.params.id) {
-        res.status(400).json(response_status.missing_fields);
-        return;
-      }
-      const booking = await Booking.findByPk(req.params.id);
-      res.status(200).json(response_status.get_success(booking));
-    } catch (error) {
-      res.status(400).json(response_status.internal_server_error(error));
-    }
-  }
-
-  async update(req, res) {
-    try {
-      const bookingData = {
-        mentor_id: req.body.mentor_id,
-        size: req.body.size,
-      };
-      if (!bookingData.mentor_id || !bookingData.size) {
-        res.status(400).json(response_status.missing_fields);
-        return;
-      }
-      const booking = await Booking.update(bookingData, {
-        where: {
-          id: req.params.id,
-        },
-      });
-      res.status(200).json(response_status.update_success(booking));
-    } catch (error) {
-      res.status(400).json(response_status.internal_server_error(error));
-    }
-  }
-
-  async delete(req, res) {
-    try {
-      const booking = await Booking.update(
-        { status: 0 },
-        {
-          where: {
-            id: req.params.id,
-          },
+    async get(req, res) {
+        try {
+            if (!req.params.id) {
+                res.status(400).json(response_status.missing_fields);
+                return;
+            }
+            const booking = await Booking.findByPk(req.params.id);
+            res.status(200).json(response_status.get_success(booking));
+        } catch (error) {
+            res.status(400).json(response_status.internal_server_error(error));
         }
-      );
-      res.status(200).json(response_status.delete_success(booking));
-    } catch (error) {
-      res.status(400).json(response_status.internal_server_error(error));
     }
-  }
+
+    async update(req, res) {
+        try {
+            const bookingData = {
+                mentor_id: req.body.mentor_id,
+                size: req.body.size,
+            };
+            if (!bookingData.mentor_id || !bookingData.size) {
+                res.status(400).json(response_status.missing_fields);
+                return;
+            }
+            const booking = await Booking.update(bookingData, {
+                where: {
+                    id: req.params.id,
+                },
+            });
+            res.status(200).json(response_status.update_success(booking));
+        } catch (error) {
+            res.status(400).json(response_status.internal_server_error(error));
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            const booking = await Booking.update(
+                { status: 0 },
+                {
+                    where: {
+                        id: req.params.id,
+                    },
+                }
+            );
+            res.status(200).json(response_status.delete_success(booking));
+        } catch (error) {
+            res.status(400).json(response_status.internal_server_error(error));
+        }
+    }
 }
 
 module.exports = new BookingController();
