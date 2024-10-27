@@ -11,6 +11,24 @@ const { Op } = require('sequelize');
 Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
 Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
+  async validAdmin(req, res) {
+    try {
+      const token = req.headers.authorization;
+      const { id } = jwt.verify(token, process.env.JWT_SECRET);
+      if (!id) {
+        return res.json({ "error_code": 1, message: 'Token is not valid' });
+      }
+      const validUser = await Admin.findByPk(id);
+      
+      if (!validUser) {
+        return res.json({ "error_code": 1, message: 'User is not valid' });
+      }
+      res.json({ "error_code": 0, user: validUser, token })
+    } catch (error) {
+      console.log(error);
+      res.json({ "error_code": 500, error: error.message });
+    }
+  }
   async addSkill(req, res) {
     try {
       const { name, imgPath } = req.body;  
