@@ -24,6 +24,14 @@ const Semester = sequelize.define('semester', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  slotCost: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  slotDuration: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   status: {
     type: DataTypes.INTEGER,
     allowNull: false,
