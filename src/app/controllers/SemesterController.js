@@ -1,3 +1,4 @@
+const Semester = require('../models/Semester')
 class SemesterController {
 
   async getLatestSemester(req, res) {
