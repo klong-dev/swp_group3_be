@@ -224,6 +224,26 @@ class BookingController {
         }
     }
 
+    async listUnConfirmed(req, res) {
+        try {
+            const { mentorId } = req.params;
+            if (!mentorId) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            const bookings = await Booking.findAll({
+                where: {
+                    mentorId: mentorId,
+                    status: 1
+                },
+                order: [['startTime', 'ASC']]
+            });
+            res.status(200).json(response_status.list_success(bookings));
+        }
+        catch (error) {
+            res.status(500).json(response_status.internal_server_error(error));
+        }
+    }
+
     async list(req, res) {
         try {
             const { type, id } = req.params;
