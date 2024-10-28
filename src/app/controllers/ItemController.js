@@ -50,8 +50,7 @@ class ItemController {
   // Update item by ID
   async updateItem(req, res) {
     try {
-      const { id } = req.params;
-      const { name, price, imgPath, status } = req.body;
+      const { id, name, price, imgPath, status } = req.body;
 
       const item = await Item.findByPk(id);
       if (!item) {
@@ -68,7 +67,7 @@ class ItemController {
   // Delete item by ID
   async deleteItem(req, res) {
     try {
-      const { id } = req.params;
+      const { id } = req.body;
 
       const item = await Item.findByPk(id);
       if (!item) {
