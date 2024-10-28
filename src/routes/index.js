@@ -21,7 +21,7 @@ function routes(app) {
   app.use('/schedule', schedule)
   app.use('/mail', mail);
   app.use('/item', item)
-    app.use('/semester', semester);
+  app.use('/semester', semester);
 }
 
 module.exports = routes;
