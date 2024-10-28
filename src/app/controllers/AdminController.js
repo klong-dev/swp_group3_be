@@ -19,14 +19,14 @@ class AdminController {
         return res.json({ "error_code": 1, message: 'Token is not valid' });
       }
       const validUser = await Admin.findByPk(id);
-      
       if (!validUser) {
         return res.json({ "error_code": 1, message: 'User is not valid' });
       }
-      res.json({ "error_code": 0, user: validUser, token })
+      const { password, ...admin } = validUser.dataValues;
+      return res.json({ "error_code": 0, user: admin, token })
     } catch (error) {
       console.log(error);
-      res.json({ "error_code": 500, error: error.message });
+      return res.json({ "error_code": 500, error: error.message });
     }
   }
   async addSkill(req, res) {
