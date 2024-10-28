@@ -1,6 +1,7 @@
 const MentorSlot = require('../models/MentorSlot');
 const Mentor = require('../models/Mentor');
 const Skill = require('../models/Skill');
+const Semester = require('../models/Semester');
 const { Op } = require('sequelize');
 
 class ScheduleController {
@@ -55,10 +56,10 @@ class ScheduleController {
         }
     }
 
-    async addMentorSlot(req, res) {
+     async addMentorSlot(req, res) {
         try {
-            const { slotStart, skillId, mentorId, description } = req.body;
-            if (!slotStart || !skillId || !mentorId) {
+            const { slotStart, mentorId, description } = req.body;
+            if (!slotStart || !mentorId) {
                 return res.status(400).json({ error_code: 1, message: 'Missing required fields' });
             }
 
@@ -67,33 +68,51 @@ class ScheduleController {
             if (!mentor) {
                 return res.status(400).json({ error_code: 2, message: 'Mentor not found' });
             }
-
-            // is skill exist?
-            const skill = await Skill.findByPk(skillId);
-            if (!skill) {
-                return res.status(400).json({ error_code: 2, message: 'Skill not found' });
+            const semester = await Semester.findOne({ order: [['id', 'DESC']], where: { status: 1 } });
+            if (!semester) {
+                return res.status(400).json({ error_code: 1, message: 'No active semester' });
             }
 
             // validate slot start & slot end
             if (new Date(slotStart) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
             }
-            const slotEnd = new Date(slotStart);
-            slotEnd.setHours(slotEnd.getHours() + 3);
+            const startTime = new Date(slotStart);
+
+            // check slotStart is contained between slotStart and slotEnd of any slot of mentor
+            const availableSlot = await MentorSlot.findAll({
+                where: {
+                    mentorId,
+                    status: 1,
+                    slotStart: {
+                        [Op.lte]: startTime
+                    },
+                    slotEnd: {
+                        [Op.gte]: startTime
+                    }
+                },
+                raw: true
+            });
+            if (availableSlot.length > 0) {
+                return res.status(400).json({ error_code: 1, message: 'Slot is already exist', availableSlot });
+            }
+            // endTime = startTime + slotDuration (hour)
+            const endTime = new Date(startTime);
+            endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
 
             const slot = await MentorSlot.create({
-                slotStart,
-                slotEnd,
-                skillId,
+                slotStart: startTime,
+                slotEnd: endTime,
+                skillId: null,
                 mentorId,
                 size: 999, // default size
-                cost: 10, // cost
+                cost: semester.slotCost, // cost
                 description,
                 status: 1
             }, { raw: true });
-            return res.json({ error_code: 0, slot });
+            return res.json({ error_code: 0, slot, message: 'Slot added successfully' });
         } catch (error) {
-            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
+            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
     }
 
