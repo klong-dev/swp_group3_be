@@ -2,6 +2,7 @@ const StudentGroup = require("../models/StudentGroup");
 const Student = require("../models/Student");
 const Booking = require("../models/Booking");
 const Mentor = require("../models/Mentor");
+const { json } = require("express");
 
 const response_status = {
   add_success: (data) => {
@@ -35,7 +36,7 @@ const response_status = {
   internal_server_error: (error) => {
     return {
       error_code: 9,
-      message: error,
+      message: error.message,
     };
   },
 };
@@ -78,7 +79,7 @@ class StudentGroupController {
         },
       });
 
-      
+
       if (!leader) {
         return res.status(404).json(response_status.data_not_found);
       }
@@ -87,21 +88,31 @@ class StudentGroupController {
       }
 
       // check if member exists
-      const members = await Student.findAll({
-        where: { email: studentGroupData.memberMails },
-      })
-      if (!members) {
-        return res.status(404).json(response_status.data_not_found);
+      let memberNotFound = [];
+      let memberExist = [];
+      for (const memberMail of studentGroupData.memberMails) {
+        const member = await Student.findOne({ where: { email: memberMail } });
+        if (!member) {
+          memberNotFound.push(memberMail);
+        } else {
+          memberExist.push(member.accountId);
+        }
+      }
+      if (memberNotFound.length > 0) {
+        return res.status(404).json({ error_code: 3, message: "Member not found", data: memberNotFound });
       }
 
-      const studentGroup = await StudentGroup.create({
-        bookingId: studentGroupData.bookingId,
-        studentId: member.accountId,
-        groupId: studentGroupData.groupId,
-        role: 0, // role 0 is member
-        status: 1,
-      });
-      return res.status(200).json(response_status.add_success(studentGroup));
+      // add member to group
+      for (const member of memberExist) {
+        await StudentGroup.create({
+          bookingId: studentGroupData.bookingId,
+          studentId: member,
+          rating: null,
+          role: 0, // role 0 is member
+          status: 1,
+        });
+      }
+      return res.status(200).json(response_status.add_success(null));
     } catch (error) {
       return res.status(500).json(response_status.internal_server_error(error));
     }

@@ -10,8 +10,13 @@ const StudentGroup = sequelize.define('student_booking', {
     primaryKey: true,
   },
   studentId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     primaryKey: true,
+  },
+  rating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0
   },
   role: {
     type: DataTypes.INTEGER,
