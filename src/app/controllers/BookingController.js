@@ -254,7 +254,6 @@ class BookingController {
                 const bookings = await Booking.findAll({
                     where: {
                         mentorId: id,
-                        status: 1,
                         startTime: {
                             [Op.gt]: new Date()
                         }
@@ -277,7 +276,6 @@ class BookingController {
                 const bookings = await Booking.findAll({
                     where: {
                         id: bookingIdList,
-                        status: 1,
                         startTime: {
                             [Op.gt]: new Date()
                         }
