@@ -176,7 +176,7 @@ class BookingController {
         }
     }
 
-    async list(req, res) {
+    async listAll(req, res) {
         try {
             const { type, id } = req.params;
             if (!type || !id) {
@@ -185,12 +185,15 @@ class BookingController {
             if (type === 'mentor') {
                 const bookings = await Booking.findAll({
                     where: {
-                        mentorId: id,
-                        startTime: {
-                            [Op.gt]: new Date()
-                        }
+                        mentorId: id
                     },
-                    raw: true
+                    include: [
+                        {
+                            model: Mentor,
+                            as: 'mentor'
+                        }
+                    ],
+                    order: [['startTime', 'ASC']],
                 });
                 res.status(200).json(response_status.list_success(bookings));
             }
@@ -204,6 +207,57 @@ class BookingController {
                 const bookings = await Booking.findAll({
                     where: {
                         id: bookingIdList,
+                    },
+                    include: [
+                        {
+                            model: Mentor,
+                            as: 'mentor'
+                        }
+                    ],
+                    order: [['startTime', 'ASC']]
+                });
+                res.status(200).json(response_status.list_success(bookings));
+            }
+
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async list(req, res) {
+        try {
+            const { type, id } = req.params;
+            if (!type || !id) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            if (type === 'mentor') {
+                const bookings = await Booking.findAll({
+                    where: {
+                        mentorId: id,
+                        status: 1,
+                        startTime: {
+                            [Op.gt]: new Date()
+                        }
+                    },
+                    include: [
+                        {
+                            model: Mentor,
+                            as: 'mentor'
+                        }
+                    ],
+                });
+                res.status(200).json(response_status.list_success(bookings));
+            }
+            if (type === 'student') {
+                const getGroup = await StudentGroup.findAll({
+                    where: { studentId: id },
+                });
+                const bookingIdList = getGroup.map(group => group.bookingId);
+
+                const bookings = await Booking.findAll({
+                    where: {
+                        id: bookingIdList,
+                        status: 1,
                         startTime: {
                             [Op.gt]: new Date()
                         }

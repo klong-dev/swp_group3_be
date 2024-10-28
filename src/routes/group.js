@@ -4,6 +4,7 @@ const Auth = require('../middleware/AuthenticateJWT')
 const router = express.Router();
 
 router.post('/add', Auth, StudentGroup.add);
+router.get('/get', Auth, StudentGroup.get);
 // // router.post('/remove/:id', Auth, StudentGroup.removeStudentById);
 // router.get('/get/:studentId?', StudentGroup.get);
 // router.get('/get/:mentorId?', StudentGroup.get);
