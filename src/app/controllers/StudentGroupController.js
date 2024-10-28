@@ -46,12 +46,12 @@ class StudentGroupController {
       const studentGroupData = {
         bookingId: req.body.bookingId, // group of
         studentId: req.body.studentId, // who add
-        memberMail: req.body.memberMail, // add who
+        memberMails: req.body.memberMails, // add who
       };
       if (
         !studentGroupData.bookingId ||
         !studentGroupData.studentId ||
-        !studentGroupData.memberMail
+        !studentGroupData.memberMails
       ) {
         return res.status(400).json(response_status.missing_fields);
       }
@@ -87,10 +87,10 @@ class StudentGroupController {
       }
 
       // check if member exists
-      const member = await Student.findOne({
-        where: { email: studentGroupData.memberMail },
-      });
-      if (!member) {
+      const members = await Student.findAll({
+        where: { email: studentGroupData.memberMails },
+      })
+      if (!members) {
         return res.status(404).json(response_status.data_not_found);
       }
 
