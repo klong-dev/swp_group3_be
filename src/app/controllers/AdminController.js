@@ -5,11 +5,48 @@ const Admin = require('../models/Admin')
 const MentorSkill = require('../models/MentorSkill')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 
-Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentor_id' });
-Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skill_id' });
+Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
+Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
+  async validAdmin(req, res) {
+    try {
+      const token = req.headers.authorization;
+      const { id } = jwt.verify(token, process.env.JWT_SECRET);
+      if (!id) {
+        return res.json({ "error_code": 1, message: 'Token is not valid' });
+      }
+      const validUser = await Admin.findByPk(id);
+      if (!validUser) {
+        return res.json({ "error_code": 1, message: 'User is not valid' });
+      }
+      const { password, ...admin } = validUser.dataValues;
+      return res.json({ "error_code": 0, user: admin, token })
+    } catch (error) {
+      console.log(error);
+      return res.json({ "error_code": 500, error: error.message });
+    }
+  }
+  async addSkill(req, res) {
+    try {
+      const { name, imgPath } = req.body;
+      if (!name || !imgPath) {
+        return res.status(400).json({ error_code: 1, message: "Name and imgPath are required." });
+      }
+      const newSkill = await Skill.create({
+        name: name,
+        imgPath: imgPath,
+        status: 1
+      });
+      return res.status(201).json({ error_code: 0, message: "Skill added successfully.", skill: newSkill });
+    } catch (error) {
+      console.error("Error adding skill: ", error);
+      return res.status(500).json({ error_code: 1, message: "An error occurred while adding the skill.", error });
+    }
+  }
+
   async showMentorList(req, res) {
     try {
       const mentorList = await Mentor.findAll({
@@ -23,6 +60,7 @@ class AdminController {
       });
       return res.json({ error_code: 0, mentorList });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error_code: 1, error });
     }
   }
@@ -49,19 +87,25 @@ class AdminController {
         return res.json({ error_code: 1, message: "No account matched" });
       }
 
-      const existingMentor = await Mentor.findOne({ where: { accountId } });
+      const existingMentor = await Mentor.findOne({
+        where: {
+          accountId,
+          status: 1
+        }
+      });
       if (existingMentor) {
         return res.json({ error_code: 2, message: "Account is already a mentor" });
       }
-      const newMentor = await Mentor.create({
-        accountId: student.accountId,
-        fullName: student.fullName,
-        email: student.email,
+      await Mentor.update({
         point: 50,
-        imgPath: student.imgPath,
         status: 1,
-      });
-      return res.json({ error_code: 0, message: "Promotion successful", mentor: newMentor });
+      },
+        { where: { accountId: student.accountId } })
+      await Student.update(
+        { isMentor: 1 },
+        { where: { accountId: student.accountId } }
+      )
+      return res.json({ error_code: 0, message: "Promotion successful" });
     } catch (error) {
       return res.status(500).json({ error_code: 1, error });
     }
@@ -178,7 +222,7 @@ class AdminController {
         where: { status: 0 },
       });
       if (inactiveMentors.length === 0) {
-        return res.json({ error_code: 1, inactiveMentors });
+        return res.json({ error_code: 1, message: "There is no mentor" });
       }
       res.status(200).json({ error_code: 0, mentors: inactiveMentors });
     } catch (error) {

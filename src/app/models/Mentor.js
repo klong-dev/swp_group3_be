@@ -12,6 +12,10 @@ const Mentor = sequelize.define("mentor", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
