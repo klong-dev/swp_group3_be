@@ -2,6 +2,7 @@ const mentor = require('./mentor')
 const student = require('./student')
 const admin = require('./admin')
 const mail = require('./mail')
+const semester = require('./semester')
 const google = require('./account/google-auth')
 
 function routes(app) {
@@ -11,6 +12,7 @@ function routes(app) {
   app.use('/mentor', mentor);
   app.use('/admin', admin);
   app.use('/mail', mail);
+  app.use('/semester', semester);
 }
 
 module.exports = routes;
