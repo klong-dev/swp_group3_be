@@ -13,7 +13,7 @@ const invite_group = async (from, to, bookingId, memberId) => {
     await sendMail(
         to,
         "Invitation to join group",
-        "asdasd",
+        "",
         htmlTemplate
     );
 
