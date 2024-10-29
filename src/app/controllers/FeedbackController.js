@@ -7,19 +7,15 @@ class FeedbackController {
   submitFeedback = async (req, res) => {
     try {
       const { studentId, mentorId, rating, text } = req.body;
-      console.log(studentId, mentorId, rating, text);
-
-      if (!studentId || !mentorId || !rating || !text) {
+      if (!studentId || !mentorId || !rating) {
         return res.status(400).json({
           error_code: 1,
           message:
-            "All fields (studentId, mentorId, rating, text) are required!",
+            "All fields (studentId, mentorId, rating) are required!",
         });
       }
       if (rating < 0 || rating > 5) {
-        return res
-          .status(400)
-          .json({ error_code: 1, message: "Rating has been from 1 to 5!" });
+        return res.status(400).json({ error_code: 1, message: "Rating has been from 1 to 5!" });
       }
       const validBooking = await StudentGroup.findOne({
         include: [
@@ -60,11 +56,7 @@ class FeedbackController {
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({
-        error_code: 1,
-        message: "An error occurred while submitting feedback",
-        error,
-      });
+      return res.status(500).json({ error_code: 1, message: "An error occurred while submitting feedback" });
     }
   };
 }
