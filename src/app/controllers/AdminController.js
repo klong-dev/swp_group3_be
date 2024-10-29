@@ -97,7 +97,7 @@ class AdminController {
         return res.json({ error_code: 2, message: "Account is already a mentor" });
       }
       await Mentor.update({
-        point: 50,
+        point: 0,
         status: 1,
       },
         { where: { accountId: student.accountId } })
