@@ -16,8 +16,6 @@ const invite_group = async (from, to, bookingId, memberId) => {
         "",
         htmlTemplate
     );
-
-    fs.writeFileSync(path.join(__dirname, '../mail_template/invite_groupss.html'), htmlTemplate);
 }
 
 module.exports = { invite_group };
