@@ -109,7 +109,12 @@ class SearchController {
         return acc;
       }, {});
 
+      const { Op } = require("sequelize");
+
       let availableSlots = [];
+      const oneDayFromNow = new Date();
+      oneDayFromNow.setDate(oneDayFromNow.getHours() + 12); 
+
       if (dates && Array.isArray(dates) && dates.length > 0) {
         availableSlots = await MentorSlot.findAll({
           where: {
@@ -118,6 +123,7 @@ class SearchController {
             slotStart: {
               [Op.or]: dates.map((date) => ({
                 [Op.between]: [`${date} 00:00:00`, `${date} 23:59:59`],
+                [Op.gt]: oneDayFromNow,
               })),
             },
           },
@@ -127,6 +133,9 @@ class SearchController {
           where: {
             mentorId: mentorIds,
             status: 1,
+            slotStart: {
+              [Op.gt]: oneDayFromNow, // Only future slots from 1 day ahead
+            },
           },
         });
       }
@@ -150,13 +159,18 @@ class SearchController {
         availableSlots.map((slot) => slot.mentorId)
       );
 
-      let mentorsWithDetails = mentors.map((mentor) => {
+      let mentorsWithDetails = mentors
+        .map((mentor) => {
           const mentorFeedbacks = feedbacks.filter(
             (f) => f.mentorId === mentor.accountId
           );
 
           const averageRating = calculateAverageRating(mentorFeedbacks);
-          if (dates && dates.length > 0 && !mentorAvailableIds.has(mentor.accountId)) {
+          if (
+            dates &&
+            dates.length > 0 &&
+            !mentorAvailableIds.has(mentor.accountId)
+          ) {
             return null;
           }
 
@@ -368,12 +382,10 @@ class SearchController {
       const { bookingId, rating } = req.body;
 
       if (!bookingId || !rating) {
-        return res
-          .status(400)
-          .json({
-            error_code: 1,
-            message: "BookingId and rating are required",
-          });
+        return res.status(400).json({
+          error_code: 1,
+          message: "BookingId and rating are required",
+        });
       }
       const studentBookings = await StudentGroup.findAll({
         where: { bookingId },
