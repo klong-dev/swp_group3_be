@@ -64,7 +64,7 @@ class TransactionController {
                             startTime: booking.startTime,
                             endTime: booking.endTime,
                             cost: booking.cost,
-                            type: 0,
+                            type: 1,
                             mentor: booking.mentor
                         });
                         transactions.push({
@@ -72,7 +72,7 @@ class TransactionController {
                             startTime: booking.startTime,
                             endTime: booking.endTime,
                             cost: booking.cost,
-                            type: 1,
+                            type: 0,
                             mentor: booking.mentor
                         });
                     } else {
