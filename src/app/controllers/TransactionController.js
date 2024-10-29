@@ -8,8 +8,6 @@ class TransactionController {
         try {
             const { type, id } = req.params;
             let transactions = [];
-            let group = [];
-
             if (type === 'mentor') {
                 const bookings = await Booking.findAll(
                     {
@@ -27,7 +25,23 @@ class TransactionController {
                             }
                         ]
                     });
-                return res.json( bookings );
+                for (const booking of bookings) {
+                    if (booking.status === 2) {
+                        let studentList = [];
+                        for (const group of booking.studentGroups) {
+                            const student = {...{role: group.role}, ...group.student.dataValues};
+                            studentList.push(student);
+                        }
+                        transactions.push({
+                            bookingId: booking.id,
+                            startTime: booking.startTime,
+                            endTime: booking.endTime,
+                            cost: booking.cost,
+                            type: 1,
+                            students: studentList
+                        });
+                    }
+                } 
             } else if(type === 'student') {
                 const getGroup = await StudentGroup.findAll({
                     where: { studentId: id },
