@@ -8,6 +8,8 @@ const booking = require('./booking')
 const group = require('./group')
 const schedule = require('./schedule')
 const item = require("./item")
+const vnpay = require("./vnpay")
+const mail = require('./mail')
 
 function routes(app) {
   app.use('/auth/google', google);
@@ -19,8 +21,10 @@ function routes(app) {
   app.use('/booking', booking);
   app.use('/group', group);
   app.use('/schedule', schedule)
+  app.use('/mail', mail);
   app.use('/semester', semester);
-  app.use('/item', item);
+  app.use('/item', item)
+  app.use('/vnpay', vnpay)
 }
 
 module.exports = routes;

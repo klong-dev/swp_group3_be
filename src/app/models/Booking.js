@@ -2,6 +2,8 @@ const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
 const moment = require('moment');
+const Mentor = require('./Mentor');
+const StudentGroup = require('./StudentGroup');
 
 const Booking = sequelize.define('booking', {
   id: {
@@ -11,7 +13,7 @@ const Booking = sequelize.define('booking', {
   },
   mentorId: {
     type: DataTypes.INTEGER,
-    allowNull: false, 
+    allowNull: false,
     references: {
       model: 'mentor',
       key: 'accountId'
@@ -44,11 +46,13 @@ const Booking = sequelize.define('booking', {
   freezeTableName: true
 });
 
-Booking.associate = function (models) {
-  Booking.belongsTo(models.Mentor, {
-    foreignKey: 'mentorId',
-    as: 'mentor'
-   });
-};
+Booking.belongsTo(Mentor, {
+  foreignKey: 'mentorId',
+  as: 'mentor'
+});
 
+Booking.hasMany(StudentGroup, {
+  foreignKey: 'bookingId',
+  as: 'studentGroups'
+});
 module.exports = Booking;

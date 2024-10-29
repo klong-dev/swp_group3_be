@@ -37,9 +37,4 @@ StudentGroup.belongsTo(Student, {
 });
 
 
-StudentGroup.belongsTo(Booking, {
-  foreignKey: 'bookingId',
-  as: 'booking'
-});
-
 module.exports = StudentGroup;
