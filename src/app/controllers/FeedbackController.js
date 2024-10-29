@@ -1,30 +1,29 @@
-const Feedback = require("../models/Feedback");
-const StudentGroup = require("../models/StudentGroup");
 const Booking = require("../models/Booking");
+const StudentGroup = require("../models/StudentGroup");
+const Feedback = require("../models/Feedback");
 const { formatTime, formatter } = require("../../utils/MentorUtils");
 
 class FeedbackController {
   submitFeedback = async (req, res) => {
     try {
       const { studentId, mentorId, rating, text } = req.body;
-      console.log(studentId, mentorId, rating, text);
-
-      if (!studentId || !mentorId || !rating || !text) {
+      if (!studentId || !mentorId || !rating) {
         return res.status(400).json({
           error_code: 1,
           message:
-            "All fields (studentId, mentorId, rating, text) are required!",
+            "Please provide studentId, mentorId, and rating for feedback submission.",
         });
       }
-      if (rating < 0 || rating > 5) {
+      if (rating < 1 || rating > 5) {
         return res
           .status(400)
-          .json({ error_code: 1, message: "Rating has been from 1 to 5!" });
+          .json({ error_code: 1, message: "Rating must be between 1 and 5." });
       }
       const validBooking = await StudentGroup.findOne({
         include: [
           {
             model: Booking,
+            as: "bookings",
             where: { mentorId: mentorId },
           },
         ],
@@ -33,7 +32,7 @@ class FeedbackController {
       if (!validBooking) {
         return res.status(403).json({
           error_code: 1,
-          message: "Student is not in a group booking with this mentor!",
+          message: "Student is not in a group booking with this mentor.",
         });
       }
 
@@ -55,15 +54,14 @@ class FeedbackController {
       };
       return res.status(200).json({
         error_code: 0,
-        message: "Feedback submitted successfully",
+        message: "Feedback submitted successfully.",
         feedback: formattedFeedback,
       });
     } catch (error) {
       console.error(error);
       return res.status(500).json({
         error_code: 1,
-        message: "An error occurred while submitting feedback",
-        error,
+        message: "An error occurred while submitting feedback.",
       });
     }
   };

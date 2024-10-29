@@ -8,8 +8,6 @@ const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 
-Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
-Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
   async validAdmin(req, res) {
     try {
@@ -50,8 +48,7 @@ class AdminController {
   async showMentorList(req, res) {
     try {
       const mentorList = await Mentor.findAll({
-        where:
-          { status: 1 },
+        where: { status: 1 },
         include: {
           model: Skill,
           attributes: ['name'],
@@ -97,7 +94,7 @@ class AdminController {
         return res.json({ error_code: 2, message: "Account is already a mentor" });
       }
       await Mentor.update({
-        point: 50,
+        point: 0,
         status: 1,
       },
         { where: { accountId: student.accountId } })
@@ -234,11 +231,14 @@ class AdminController {
     try {
       const mentorId = req.params.id;
       const mentor = await Mentor.findByPk(mentorId);
+      const student = await Student.findByPk(mentorId)
       if (!mentor) {
         return res.status(404).json({ error_code: 1, message: 'Mentor not found' });
       }
-      mentor.status = 0;
+      mentor.status = 0
+      student.isMentor = 0
       await mentor.save();
+      await student.save();
       res.status(200).json({ error_code: 0, message: 'Mentor disabled successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error: error.message });
@@ -372,6 +372,32 @@ class AdminController {
       }
     } catch (error) {
       return res.json({ "error_code": 3, error });
+    }
+  }
+
+  async getMentorsAndStudentsQuantity(req, res) {
+    try {
+      const mentorsCount = await Mentor.count();
+      const studentsCount = await Student.count();
+
+      return res.status(200).json({
+        error_code: 0,
+        data: {
+          mentors: mentorsCount,
+          students: studentsCount,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+
+  async getBookingQuantity(req, res) {
+    try {
+      const bookingsCount = await Booking.count();
+      return res.status(200).json({ error_code: 0, bookings: bookingsCount });
+    } catch (error) {
+      return res.status(500).json({ error_code: 500, error: error.message });
     }
   }
 }

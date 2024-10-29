@@ -1,9 +1,9 @@
 const { DataTypes } = require("sequelize");
-const db = require('../../config/db/index');
+const db = require("../../config/db/index");
 const sequelize = db.sequelize;
-const moment = require('moment');
-const Mentor = require('./Mentor');
-const StudentGroup = require('./StudentGroup');
+const moment = require("moment");
+const Mentor = require("./Mentor");
+const StudentGroup = require("./StudentGroup");
 
 const Booking = sequelize.define('booking', {
   id: {
@@ -51,12 +51,16 @@ const Booking = sequelize.define('booking', {
 });
 
 Booking.belongsTo(Mentor, {
-  foreignKey: 'mentorId',
-  as: 'mentor'
+  foreignKey: "mentorId",
+  as: "mentor",
 });
 
 Booking.hasMany(StudentGroup, {
-  foreignKey: 'bookingId',
-  as: 'studentGroups'
+  foreignKey: "bookingId",
+  as: "studentGroups",
+});
+StudentGroup.belongsTo(Booking, {
+  foreignKey: "bookingId",
+  as: "bookings",
 });
 module.exports = Booking;

@@ -50,10 +50,12 @@ class SearchController {
           });
         }
       }
+      console.log(whereCondition);
 
       const { rows: mentors } = await Mentor.findAndCountAll({
         where: whereCondition,
       });
+      console.log(mentors);
 
       if (mentors.length === 0) {
         return res.json({
@@ -66,6 +68,7 @@ class SearchController {
       }
 
       const mentorIds = mentors.map((mentor) => mentor.accountId);
+      console.log(mentorIds);
 
       const feedbacks = await Feedback.findAll({
         where: {
@@ -106,7 +109,12 @@ class SearchController {
         return acc;
       }, {});
 
+      const { Op } = require("sequelize");
+
       let availableSlots = [];
+      const oneDayFromNow = new Date();
+      oneDayFromNow.setDate(oneDayFromNow.getHours() + 12); 
+
       if (dates && Array.isArray(dates) && dates.length > 0) {
         availableSlots = await MentorSlot.findAll({
           where: {
@@ -115,6 +123,7 @@ class SearchController {
             slotStart: {
               [Op.or]: dates.map((date) => ({
                 [Op.between]: [`${date} 00:00:00`, `${date} 23:59:59`],
+                [Op.gt]: oneDayFromNow,
               })),
             },
           },
@@ -124,9 +133,27 @@ class SearchController {
           where: {
             mentorId: mentorIds,
             status: 1,
+            slotStart: {
+              [Op.gt]: oneDayFromNow, // Only future slots from 1 day ahead
+            },
           },
         });
       }
+
+      // const bookedSlots = await Booking.findAll({
+      //   where: {
+      //     mentorId: mentorIds,
+      //     status: 2,
+      //   },
+      // });
+
+      // const bookedSlotTimes = new Set(
+      //   bookedSlots.map((slot) => slot.slotStart)
+      // );
+
+      // availableSlots = availableSlots.filter(
+      //   (slot) => !bookedSlotTimes.has(slot.slotStart)
+      // );
 
       const mentorAvailableIds = new Set(
         availableSlots.map((slot) => slot.mentorId)
@@ -214,7 +241,9 @@ class SearchController {
       const { mentorId } = req.query;
       const mentor = await Mentor.findByPk(mentorId);
       if (!mentor) {
-        return res.status(404).json({ error_code: 1, message: "Mentor not found" });
+        return res
+          .status(404)
+          .json({ error_code: 1, message: "Mentor not found" });
       }
       const feedbacks = await Feedback.findAll({
         where: { mentorId },
@@ -318,7 +347,9 @@ class SearchController {
       return res.json({ error_code: 0, skills });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
 
@@ -340,37 +371,39 @@ class SearchController {
       return res.json({ error_code: 0, skills: skillsWithMentorCount });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
+      return res
+        .status(500)
+        .json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
-
+  //0
   ratingStudent = async (req, res) => {
     try {
-        const { bookingId, rating } = req.body;
+      const { bookingId, rating } = req.body;
 
-        if (!bookingId || !rating) {
-            return res.status(400).json({ error_code: 1, message: 'BookingId and rating are required'
-            });
-        }
-        const studentBookings = await StudentGroup.findAll({
-            where: { bookingId }
+      if (!bookingId || !rating) {
+        return res.status(400).json({
+          error_code: 1,
+          message: "BookingId and rating are required",
         });
+      }
+      const studentBookings = await StudentGroup.findAll({
+        where: { bookingId },
+      });
 
-        if (!studentBookings.length) {
-            return res.status(404).json({ error_code: 1, error });
-        }
-        const updatePromises = studentBookings.map(studentBookings => 
-          studentBookings.update({ rating })
-        );      
-        await Promise.all(updatePromises);
-        return res.status(200).json({ error_code: 0 });
-
+      if (!studentBookings.length) {
+        return res.status(404).json({ error_code: 1, error });
+      }
+      const updatePromises = studentBookings.map((studentBookings) =>
+        studentBookings.update({ rating })
+      );
+      await Promise.all(updatePromises);
+      return res.status(200).json({ error_code: 0 });
     } catch (error) {
-        console.error('Error rating students:', error);
-        return res.status(500).json({ error_code: 1, error });
+      console.error("Error rating students:", error);
+      return res.status(500).json({ error_code: 1, error });
     }
   };
-
 }
 
 module.exports = new SearchController();
