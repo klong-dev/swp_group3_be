@@ -100,7 +100,7 @@ class StudentGroupController {
         if (!member) {
           memberNotFound.push(memberMail);
         } else {
-          memberExist.push(member.accountId);
+          memberExist.push(member);
         }
       }
       if (memberNotFound.length > 0) {
@@ -111,12 +111,12 @@ class StudentGroupController {
       for (const member of memberExist) {
         await StudentGroup.create({
           bookingId: studentGroupData.bookingId,
-          studentId: member,
+          studentId: member.accountId,
           rating: null,
           role: 0, // role 0 is member
           status: 1, // pending invite
         });
-        await invite_group(student.email, "longhoang8204@gmail.com", studentGroupData.bookingId, member);
+        await invite_group(student.email, member.email, studentGroupData.bookingId, member);
       }
       return res.status(200).json(response_status.add_success(null));
     } catch (error) {
