@@ -11,6 +11,7 @@ const item = require("./item")
 const vnpay = require("./vnpay")
 const mail = require('./mail')
 const transactions = require('./transaction')
+const donate = require('./donate')
 
 function routes(app) {
   app.use('/auth/google', google);
@@ -27,7 +28,7 @@ function routes(app) {
   app.use('/item', item)
   app.use('/vnpay', vnpay)
   app.use('/transaction', transactions)
-
+  app.use('/donate', donate)
 }
 
 module.exports = routes;
