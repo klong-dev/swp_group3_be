@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.post('/', Auth, BookingController.book);
 router.post('/confirm', Auth, BookingController.confirm);
+router.post('/deny', Auth, BookingController.deny);
 router.get('/list/:type/:id', Auth, BookingController.list);
 router.get('/list-all/:type/:id', Auth, BookingController.listAll);
 router.get('/get/:id', Auth, BookingController.get);
