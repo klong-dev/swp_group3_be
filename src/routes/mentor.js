@@ -5,6 +5,7 @@ const MentorController = require('../app/controllers/MentorController');
 router.get('/search', MentorController.getMentors);
 router.get('/profile', MentorController.loadProfile);
 router.get('/feedback', MentorController.getListFeedback);
-router.get('/skills', MentorController.getSkills);
-
+router.get('/skills', MentorController.getMentorSkills);
+router.get('/loadskills', MentorController.loadAllSkills);
+router.post('/rating-student', MentorController.ratingStudent);
 module.exports = router

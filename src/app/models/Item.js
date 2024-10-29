@@ -28,7 +28,6 @@ const Item = sequelize.define('item', {
 }, {
   timestamps:false,
   freezeTableName: true
-
 });
 
 module.exports = Item;

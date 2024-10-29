@@ -1,15 +1,22 @@
 const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
+const Booking = require('./Booking');
+const Student = require('./Student');
 
-const StudentGroup = sequelize.define('student_group', {
+const StudentGroup = sequelize.define('student_booking', {
   bookingId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
   studentId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     primaryKey: true,
+  },
+  rating: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0
   },
   role: {
     type: DataTypes.INTEGER,
@@ -23,5 +30,11 @@ const StudentGroup = sequelize.define('student_group', {
   timestamps: false,
   freezeTableName: true
 });
+
+StudentGroup.belongsTo(Student, {
+  foreignKey: 'studentId',
+  as: 'student'
+});
+
 
 module.exports = StudentGroup;

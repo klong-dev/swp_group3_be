@@ -35,7 +35,13 @@ const Mentor = sequelize.define("mentor", {
 }, {
   timestamps: false,
   freezeTableName: true
-
 });
+
+Mentor.associate = function(models) {
+  Mentor.hasMany(models.Booking, {
+    foreignKey: 'mentorId',
+    as: 'bookings'
+   });
+};
 
 module.exports = Mentor;

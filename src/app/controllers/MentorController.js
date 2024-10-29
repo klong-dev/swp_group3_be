@@ -5,143 +5,372 @@ const Skill = require("../models/Skill");
 const MentorSkill = require("../models/MentorSkill");
 const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
+const Booking = require("../models/Booking");
+const MentorSlot = require("../models/MentorSlot");
+const StudentGroup = require("../models/StudentGroup");
+const {
+  calculateAverageRating,
+  DateTimeFormat,
+} = require("../../utils/MentorUtils");
 
-// 3 param: skills,star,search
 class SearchController {
-  // SEARCH BY SKILL
-  async getMentors(req, res) {
+  // 4 params: skills,search, rating, page
+  getMentors = async (req, res) => {
     try {
-      const { skill, page = 1, name = "" } = req.query;
+      const { skill, page = 1, name = "", rating, dates } = req.query;
       const limit = 10;
-      const offset = (parseInt(page) - 1) * parseInt(limit);
-      console.log(skill);
 
-      if (!skill && !name || !skill.length == 0 && !name ) {
-        return res.json([]);
+      let whereCondition = { status: 1 };
+
+      if (name && name.trim() !== "") {
+        whereCondition.fullName = {
+          [Op.like]: `%${name.trim()}%`,
+        };
       }
-      if (!skill) {
-        const { count, rows: mentors } = await Mentor.findAndCountAll({
-          where: {
-            full_name: {
-              [Op.like]: `%${name}%`,
-            },
-          },
-          limit: parseInt(limit),
-          offset: offset,
-          order: [["point", "DESC"]],
-        });
-        return res.json({
-          error_code: 0,
-          totalMentors: count,
-          totalPages: Math.ceil(count / limit),
-          currentPage: parseInt(page),
-          mentors: mentors,
-        });
-      } else {
-        const skillResult = await Skill.findOne({
-          where: { name: skill },
-        });
-        const skillID = skillResult.id;
-        console.log(skillID);
+
+      let targetMentorIds = [];
+      if (skill && skill.length > 0) {
         const mentorSkills = await MentorSkill.findAll({
           where: {
-            skill_id: skillID,
+            skillId: skill,
+            status: 1,
           },
         });
-        const mentorIDs = mentorSkills.map((mentor) => mentor.id);
-        const { count, rows: mentors } = await Mentor.findAndCountAll({
-          where: {
-            id: mentorIDs,
-            full_name: {
-              [Op.like]: `%${name}%`,
-            },
-          },
-          limit: parseInt(limit),
-          offset: offset,
-          order: [["point", "DESC"]],
-        });
-        console.log(limit);
+        targetMentorIds = mentorSkills.map((ms) => ms.mentorId);
+
+        if (targetMentorIds.length > 0) {
+          whereCondition.accountId = targetMentorIds;
+        } else {
+          return res.json({
+            error_code: 0,
+            totalMentors: 0,
+            totalPages: 0,
+            currentPage: parseInt(page),
+            mentors: [],
+          });
+        }
+      }
+
+      const { rows: mentors } = await Mentor.findAndCountAll({
+        where: whereCondition,
+      });
+
+      if (mentors.length === 0) {
         return res.json({
           error_code: 0,
-          totalMentors: count,
-          totalPages: Math.ceil(count / limit),
+          totalMentors: 0,
+          totalPages: 0,
           currentPage: parseInt(page),
-          mentors: mentors,
+          mentors: [],
         });
       }
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
-    }
-  }
-  async loadProfile(req, res) {
-    try {
-      const { id } = req.query;
-      console.log(id);
-      const mentor = await Mentor.findOne({
-        where: {
-          id: id,
-        },
-      });
-      return res.json({ error_code: 0, mentor });
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
-    }
-  }
-  async getListFeedback(req, res) {
-    try {
-      const { id } = req.query;
+
+      const mentorIds = mentors.map((mentor) => mentor.accountId);
+
       const feedbacks = await Feedback.findAll({
         where: {
-          mentor_id: id,
+          mentorId: mentorIds,
+          status: 1,
         },
         order: [["createdAt", "DESC"]],
       });
-      const averageRating =
-        feedbacks.length > 0
-          ? feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0) /
-            feedbacks.length
-          : 0;
-      return res.json({
-        error_code: 0,
-        feedbacks,
-        averageRating,
-      });
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
-    }
-  }
-  async getSkills(req, res) {
-    try {
-      const { id } = req.query;
+
       const mentorSkills = await MentorSkill.findAll({
         where: {
-          mentor_id: id,
+          mentorId: mentorIds,
+          status: 1,
         },
       });
-      const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skill_id);
+
+      const skillIds = [...new Set(mentorSkills.map((ms) => ms.skillId))];
 
       const skills = await Skill.findAll({
         where: {
           id: skillIds,
+          status: 1,
         },
+      });
+
+      const skillsMap = skills.reduce((acc, skill) => {
+        acc[skill.id] = skill.name;
+        return acc;
+      }, {});
+
+      const mentorSkillsMap = mentorSkills.reduce((acc, ms) => {
+        if (!acc[ms.mentorId]) {
+          acc[ms.mentorId] = [];
+        }
+        if (skillsMap[ms.skillId]) {
+          acc[ms.mentorId].push(skillsMap[ms.skillId]);
+        }
+        return acc;
+      }, {});
+
+      let availableSlots = [];
+      if (dates && Array.isArray(dates) && dates.length > 0) {
+        availableSlots = await MentorSlot.findAll({
+          where: {
+            mentorId: mentorIds,
+            status: 1,
+            slotStart: {
+              [Op.or]: dates.map((date) => ({
+                [Op.between]: [`${date} 00:00:00`, `${date} 23:59:59`],
+              })),
+            },
+          },
+        });
+      } else {
+        availableSlots = await MentorSlot.findAll({
+          where: {
+            mentorId: mentorIds,
+            status: 1,
+          },
+        });
+      }
+
+      const mentorAvailableIds = new Set(
+        availableSlots.map((slot) => slot.mentorId)
+      );
+
+      let mentorsWithDetails = mentors
+        .map((mentor) => {
+          const mentorFeedbacks = feedbacks.filter(
+            (f) => f.mentorId === mentor.accountId
+          );
+
+          const averageRating = calculateAverageRating(mentorFeedbacks);
+          if (
+            dates &&
+            dates.length > 0 &&
+            !mentorAvailableIds.has(mentor.accountId)
+          ) {
+            return null;
+          }
+
+          const mentorSlots =
+            availableSlots
+              .filter((slot) => slot.mentorId === mentor.accountId)
+              .map((slot) => ({
+                slotStart: DateTimeFormat(slot.slotStart),
+                slotEnd: DateTimeFormat(slot.slotEnd),
+                cost: slot.cost,
+                size: slot.size,
+                description: slot.description,
+              })) || [];
+          const { accountId, fullName, email, point, imgPath, status } = mentor;
+          return {
+            accountId,
+            fullName,
+            email,
+            point,
+            imgPath,
+            status,
+            averageRating,
+            ratingCount: mentorFeedbacks.length,
+            skills: mentorSkillsMap[mentor.accountId] || [],
+            availableSlots: mentorSlots,
+          };
+        })
+        .filter((mentor) => mentor !== null);
+
+      mentorsWithDetails.sort((a, b) => {
+        const aNearestSlot =
+          a.availableSlots.length > 0 ? a.availableSlots[0].slotStart : null;
+        const bNearestSlot =
+          b.availableSlots.length > 0 ? b.availableSlots[0].slotStart : null;
+        if (aNearestSlot && bNearestSlot) {
+          return aNearestSlot - bNearestSlot;
+        }
+        return b.availableSlots.length - a.availableSlots.length;
+      });
+
+      if (rating) {
+        mentorsWithDetails = mentorsWithDetails.filter(
+          (mentor) => mentor.averageRating >= parseFloat(rating)
+        );
+      }
+      const startIndex = (parseInt(page) - 1) * parseInt(limit);
+      const paginatedMentors = mentorsWithDetails.slice(
+        startIndex,
+        startIndex + parseInt(limit)
+      );
+
+      return res.json({
+        error_code: 0,
+        totalMentors: mentorsWithDetails.length,
+        totalPages: Math.ceil(mentorsWithDetails.length / limit),
+        currentPage: parseInt(page),
+        mentors: paginatedMentors,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error_code: 1, message: "ERROR", error });
+    }
+  };
+
+  //1
+  loadProfile = async (req, res) => {
+    try {
+      const { mentorId } = req.query;
+      const mentor = await Mentor.findByPk(mentorId);
+      if (!mentor) {
+        return res.status(404).json({ error_code: 1, message: "Mentor not found" });
+      }
+      const feedbacks = await Feedback.findAll({
+        where: { mentorId },
+        order: [["createdAt", "DESC"]],
+      });
+      const averageRating = calculateAverageRating(feedbacks);
+      const mentorSkills = await MentorSkill.findAll({ where: { mentorId } });
+      const skillIds = mentorSkills.map((skill) => skill.skillId);
+      const skills = await Skill.findAll({
+        where: { id: skillIds },
+      });
+      const skillNames = skills.map((skill) => skill.name);
+      const {
+        accountId,
+        fullName,
+        description,
+        email,
+        point,
+        imgPath,
+        status,
+      } = mentor;
+      const mentorWithRating = {
+        accountId,
+        fullName,
+        description,
+        email,
+        point,
+        imgPath,
+        status,
+        averageRating,
+        skills: skillNames,
+      };
+      return res.json({ error_code: 0, mentor: mentorWithRating });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error_code: 1, message: "ERROR", error });
+    }
+  };
+
+  //1
+  getListFeedback = async (req, res) => {
+    try {
+      const { mentorId } = req.query;
+      const feedbacks = await Feedback.findAll({
+        where: { mentorId },
+        order: [["createdAt", "DESC"]],
+      });
+      const studentIds = [
+        ...new Set(feedbacks.map((feedback) => feedback.studentId)),
+      ];
+      const students = await Student.findAll({
+        where: { accountId: studentIds },
+        attributes: ["accountId", "fullName", "imgPath"],
+      });
+
+      const studentMap = students.reduce((acc, student) => {
+        acc[student.accountId] = {
+          fullName: student.fullName,
+          imgPath: student.imgPath,
+        };
+        return acc;
+      }, {});
+      const formattedFeedbacks = feedbacks.map((feedback) => {
+        const student = studentMap[feedback.studentId] || {
+          fullName: "Unknown",
+          imgPath: null,
+        };
+
+        return {
+          ...feedback.get({ plain: true }),
+          studentName: student.fullName,
+          studentAvatar: student.imgPath,
+          createdAt: DateTimeFormat(feedback.createdAt),
+          updatedAt: DateTimeFormat(feedback.updatedAt),
+        };
+      });
+
+      const averageRating = calculateAverageRating(feedbacks);
+      return res.json({
+        error_code: 0,
+        feedbacks: formattedFeedbacks,
+        averageRating,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error_code: 1, error });
+    }
+  };
+
+  //1
+  async getMentorSkills(req, res) {
+    try {
+      const { mentorId } = req.query;
+      const mentorSkills = await MentorSkill.findAll({
+        where: { mentorId },
+      });
+      const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skillId);
+      const skills = await Skill.findAll({
+        where: { id: skillIds },
       });
       return res.json({ error_code: 0, skills });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
+      return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
+
+  //1
+  async loadAllSkills(req, res) {
+    try {
+      const skills = await Skill.findAll();
+      const skillsWithMentorCount = await Promise.all(
+        skills.map(async (skill) => {
+          const count = await MentorSkill.count({
+            where: { skillId: skill.id },
+          });
+          return {
+            ...skill.toJSON(),
+            mentorCount: count,
+          };
+        })
+      );
+      return res.json({ error_code: 0, skills: skillsWithMentorCount });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
+    }
+  }
+
+  ratingStudent = async (req, res) => {
+    try {
+        const { bookingId, rating } = req.body;
+
+        if (!bookingId || !rating) {
+            return res.status(400).json({ error_code: 1, message: 'BookingId and rating are required'
+            });
+        }
+        const studentBookings = await StudentGroup.findAll({
+            where: { bookingId }
+        });
+
+        if (!studentBookings.length) {
+            return res.status(404).json({ error_code: 1, error });
+        }
+        const updatePromises = studentBookings.map(studentBookings => 
+          studentBookings.update({ rating })
+        );      
+        await Promise.all(updatePromises);
+        return res.status(200).json({ error_code: 0 });
+
+    } catch (error) {
+        console.error('Error rating students:', error);
+        return res.status(500).json({ error_code: 1, error });
+    }
+  };
+
 }
 
 module.exports = new SearchController();

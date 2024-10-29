@@ -1,17 +1,16 @@
 const { DataTypes } = require("sequelize");
-const db = require("../../config/db/index");
+const db = require("../../config/db/index"); 
 const sequelize = db.sequelize;
 
 const Feedback = sequelize.define('feedback', {
   mentorId: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
     allowNull: false,
   },
   studentId: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
     allowNull: false,
+    primaryKey: true
   },
   text: {
     type: DataTypes.STRING,
@@ -27,8 +26,7 @@ const Feedback = sequelize.define('feedback', {
   },
 }, {
   timestamps: true,
-  freezeTableName: true
-
+  freezeTableName: true,
 });
 
 module.exports = Feedback;
