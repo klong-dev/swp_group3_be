@@ -1,7 +1,7 @@
 const StudentGroup = require("../models/StudentGroup");
 const Student = require("../models/Student");
 const Booking = require("../models/Booking");
-const e = require("express");
+const Mentor = require("../models/Mentor");
 
 const response_status = {
   add_success: (data) => {
@@ -46,18 +46,14 @@ class StudentGroupController {
       const studentGroupData = {
         bookingId: req.body.bookingId, // group of
         studentId: req.body.studentId, // who add
-        memberId: req.body.memberId, // add who
+        memberMail: req.body.memberMail, // add who
       };
       if (
         !studentGroupData.bookingId ||
         !studentGroupData.studentId ||
-        !studentGroupData.memberId
+        !studentGroupData.memberMail
       ) {
         return res.status(400).json(response_status.missing_fields);
-      }
-
-      if (studentGroupData.studentId === studentGroupData.memberId) {
-        return res.status(400).json(response_status.bad_request);
       }
 
       // check if booking exists
@@ -81,6 +77,8 @@ class StudentGroupController {
           bookingId: studentGroupData.bookingId,
         },
       });
+
+      
       if (!leader) {
         return res.status(404).json(response_status.data_not_found);
       }
@@ -89,14 +87,16 @@ class StudentGroupController {
       }
 
       // check if member exists
-      const member = await Student.findByPk(studentGroupData.memberId);
+      const member = await Student.findOne({
+        where: { email: studentGroupData.memberMail },
+      });
       if (!member) {
         return res.status(404).json(response_status.data_not_found);
       }
 
       const studentGroup = await StudentGroup.create({
         bookingId: studentGroupData.bookingId,
-        studentId: studentGroupData.memberId,
+        studentId: member.accountId,
         groupId: studentGroupData.groupId,
         role: 0, // role 0 is member
         status: 1,
@@ -123,30 +123,42 @@ class StudentGroupController {
 
   async get(req, res) {
     try {
-      const { studentId, mentorId } = req.params;
-      if (!!studentId) {
-        const studentGroup = await StudentGroup.findOne({
-          where: { studentId: req.params.studentId },
-        });
-        if (!studentGroup) {
-          return res.status(404).json({ message: "Student Group not found" });
-        }
-        return res.status(200).json(studentGroup);
-      } else if (!!mentorId) {
-        const studentGroup = await StudentGroup.findOne({
-          where: { mentorId: req.params.mentorId },
-        });
-        if (!studentGroup) {
-          return res.status(404).json({ message: "Student Group not found" });
-        }
-        return res.status(200).json(studentGroup);
+      const { bookingId } = req.query;
+      if (!bookingId) {
+        return res.status(400).json(response_status.missing_fields);
       }
-      return res.status(400).json({ message: "Internal Server Error" });
+      const booking = await Booking.findByPk(bookingId, {
+        include: [
+          {
+            model: Mentor,
+            as: "mentor",
+          },
+        ],
+      });
+      if (!booking) {
+        return json.status(404).json(response_status.data_not_found);
+      }
+      const mentor = booking.mentor;
+      const studentGroup = await StudentGroup.findAll({
+        where: { bookingId: bookingId },
+        include: [
+          {
+            model: Student,
+            as: "student",
+          },
+        ],
+      });
+      if (!studentGroup) {
+        return res.status(404).json(response_status.data_not_found);
+      }
+      return res.status(200).json({ error_code: 0, mentor, group: studentGroup });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Internal Server Error", error });
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
     }
   }
+
+
 }
 
 module.exports = new StudentGroupController();

@@ -1,19 +1,19 @@
 const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
-const Booking = require('./Booking');
-const Student = require('./Student');
 
-const StudentGroup = sequelize.define('student_booking', {
-  bookingId: {
+const MentorSkill = sequelize.define('mentor_skill', {
+  skillId: {
     type: DataTypes.INTEGER,
     primaryKey: true,
+    allowNull: false
   },
-  studentId: {
+  mentorId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     primaryKey: true,
   },
-  role: {
+  level: {
     type: DataTypes.INTEGER,
     allowNull: true
   },
@@ -26,15 +26,4 @@ const StudentGroup = sequelize.define('student_booking', {
   freezeTableName: true
 });
 
-StudentGroup.belongsTo(Student, {
-  foreignKey: 'studentId',
-  as: 'student'
-});
-
-
-StudentGroup.belongsTo(Booking, {
-  foreignKey: 'bookingId',
-  as: 'booking'
-});
-
-module.exports = StudentGroup;
+module.exports = MentorSkill;

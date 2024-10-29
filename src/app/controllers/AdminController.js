@@ -2,12 +2,33 @@ const Mentor = require('../models/Mentor')
 const Student = require('../models/Student')
 const Semester = require('../models/Semester')
 const Admin = require('../models/Admin')
+const MentorSkill = require('../models/MentorSkill')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 
+Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
+Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
+  async validAdmin(req, res) {
+    try {
+      const token = req.headers.authorization;
+      const { id } = jwt.verify(token, process.env.JWT_SECRET);
+      if (!id) {
+        return res.json({ "error_code": 1, message: 'Token is not valid' });
+      }
+      const validUser = await Admin.findByPk(id);
+      if (!validUser) {
+        return res.json({ "error_code": 1, message: 'User is not valid' });
+      }
+      const { password, ...admin } = validUser.dataValues;
+      return res.json({ "error_code": 0, user: admin, token })
+    } catch (error) {
+      console.log(error);
+      return res.json({ "error_code": 500, error: error.message });
+    }
+  }
   async addSkill(req, res) {
     try {
       const { name, imgPath } = req.body;  
@@ -28,7 +49,15 @@ class AdminController {
 
   async showMentorList(req, res) {
     try {
-      const mentorList = await Mentor.findAll({ where: { status: 1 } });
+      const mentorList = await Mentor.findAll({
+        where:
+          { status: 1 },
+        include: {
+          model: Skill,
+          attributes: ['name'],
+          through: { attributes: [] },
+        },
+      });
       return res.json({ error_code: 0, mentorList });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
@@ -323,7 +352,8 @@ class AdminController {
         return res.json({ error_code: 1, message: wrongUsernameMsg })
       }
 
-      const valid = await bcrypt.compare(password, user.password);
+      // const valid = await bcrypt.compare(password, user.password);
+      const valid = password == user.password
       if (valid) {
         const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
           expiresIn: '1h',

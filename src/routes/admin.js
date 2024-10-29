@@ -20,4 +20,8 @@ router.get('/search-student-by-id', Auth, AdminController.searchStudentByStudent
 router.get('/activate-mentor/:id', Auth, AdminController.activateMentor);
 router.post('/login/validate', AdminController.validate);
 
+// tại vì payload của token không có accountId, không thể dùng Auth middleware
+// lấy trực tiếp headers.authorization để lấy token ( xem trong AdminController.validAdmin )
+router.post('/valid', AdminController.validAdmin);
+
 module.exports = router

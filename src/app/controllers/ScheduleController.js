@@ -1,7 +1,7 @@
 const MentorSlot = require('../models/MentorSlot');
 const Mentor = require('../models/Mentor');
 const Skill = require('../models/Skill');
-const { raw } = require('express');
+const { Op } = require('sequelize');
 
 class ScheduleController {
     /*
@@ -24,11 +24,15 @@ class ScheduleController {
             }
             const slots = await MentorSlot.findAll({
                 where: {
-                    mentorId: mentorId
+                    mentorId: mentorId,
+                    status: 1,
+                    slotStart: {
+                        [Op.gte]: new Date()
+                    }
                 },
                 raw: true
             });
-            
+
             // Format the datetime fields
             const formatDateTime = (dateTime) => {
                 const date = new Date(dateTime);
@@ -38,7 +42,7 @@ class ScheduleController {
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 const seconds = String(date.getSeconds()).padStart(2, '0');
-                return `${year}:${month}:${day} ${hours}:${minutes}:${seconds}`;
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
             };
 
             slots.forEach(slot => {
@@ -73,7 +77,7 @@ class ScheduleController {
             // validate slot start & slot end
             if (new Date(slotStart) < new Date()) {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
-            } 
+            }
             const slotEnd = new Date(slotStart);
             slotEnd.setHours(slotEnd.getHours() + 3);
 
@@ -136,9 +140,9 @@ class ScheduleController {
                 raw: true
             });
             if (slot[0] >= 1)
-                return res.json({ error_code: 0, message: "Slot updated successfully"});
-            else 
-                return res.status(400).json({ error_code: 0, message: 'Everything is up to date'});
+                return res.json({ error_code: 0, message: "Slot updated successfully" });
+            else
+                return res.status(400).json({ error_code: 0, message: 'Everything is up to date' });
         } catch (error) {
             return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
         }
