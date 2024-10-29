@@ -26,7 +26,7 @@ function routes(app) {
   app.use('/semester', semester);
   app.use('/item', item)
   app.use('/vnpay', vnpay)
-  app.use('/transactions', transactions)
+  app.use('/transaction', transactions)
 
 }
 
