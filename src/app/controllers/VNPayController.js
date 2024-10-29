@@ -2,6 +2,9 @@ const crypto = require("crypto");
 const querystring = require("qs");
 const { vnpay } = require("../../config/vnpay");
 const moment = require("moment-timezone");
+const Item = require("../models/Item");
+const Mentor = require("../models/Mentor");
+const Student = require("../models/Student");
 
 class VNPayController {
     sortObject = (obj) => {
@@ -20,17 +23,28 @@ class VNPayController {
         return sorted;
     }
 
-    createPaymentUrl = (req, res) => {
-        const { amount, orderInfo } = req.body;
-
+    createPaymentUrl = async (req, res) => {
+        const { itemId, mentorId, studentId } = req.body;
+        const item = await Item.findByPk(itemId);
+        if (!item) {
+            return res.status(404).json({ error_code: 2, message: "Item not found" });
+        }
+        const mentor = await Mentor.findByPk(mentorId);
+        if (!mentor) {
+            return res.status(404).json({ error_code: 2, message: "Mentor not found" });
+        }
+        const student = await Student.findByPk(studentId);
+        if (!student) {
+            return res.status(404).json({ error_code: 2, message: "Student not found" });
+        }
         let vnp_Params = {
             vnp_Version: "2.1.0",
             vnp_Command: "pay",
             vnp_TmnCode: vnpay.vnp_TmnCode,
-            vnp_Amount: Math.round(amount * 100), // Chuyển đổi sang đơn vị VND
+            vnp_Amount: Math.round(item.price * 100), // Chuyển đổi sang đơn vị VND
             vnp_CurrCode: "VND",
             vnp_TxnRef: `VNP${moment().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss")}`,
-            vnp_OrderInfo: orderInfo,
+            vnp_OrderInfo: `payment_${item.id}_${mentor.id}_${student.id}`,
             vnp_Locale: "vn",
             vnp_BankCode: "NCB",
             vnp_ReturnUrl: vnpay.vnp_ReturnUrl,
