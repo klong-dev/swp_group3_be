@@ -234,11 +234,14 @@ class AdminController {
     try {
       const mentorId = req.params.id;
       const mentor = await Mentor.findByPk(mentorId);
+      const student = await Student.findByPk(mentorId)
       if (!mentor) {
         return res.status(404).json({ error_code: 1, message: 'Mentor not found' });
       }
-      mentor.status = 0;
+      mentor.status = 0
+      student.isMentor = 0
       await mentor.save();
+      await student.save();
       res.status(200).json({ error_code: 0, message: 'Mentor disabled successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error: error.message });
@@ -374,6 +377,57 @@ class AdminController {
       return res.json({ "error_code": 3, error });
     }
   }
+
+  async getMentorsAndStudentsQuantity(req, res) {
+    try {
+      const mentorsCount = await Mentor.count();
+      const studentsCount = await Student.count();
+
+      return res.status(200).json({
+        error_code: 0,
+        data: {
+          mentors: mentorsCount,
+          students: studentsCount,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+
+  async getBookingQuantity(req, res) {
+    try {
+      const bookingsCount = await Booking.count();
+      return res.status(200).json({ error_code: 0, bookings: bookingsCount });
+    } catch (error) {
+      return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+  async getMentorsInEachSkill(req, res) {
+    try {
+      const mentorsInSkills = await MentorSkill.findAll({
+        attributes: ['skillId', [sequelize.fn('COUNT', sequelize.col('mentorId')), 'mentorCount']],
+        group: ['skillId'],
+        include: [
+          {
+            model: Skill,
+            attributes: ['name'],
+          },
+        ],
+      });
+
+      const formattedData = mentorsInSkills.map((item) => ({
+        skill: item.Skill.name,
+        mentorCount: item.dataValues.mentorCount,
+      }));
+
+      return res.status(200).json({error_code: 0, formattedData});
+    } catch (error) {
+      return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+
+
 }
 
 module.exports = new AdminController()
