@@ -10,17 +10,17 @@ class FeedbackController {
       if (!studentId || !mentorId || !rating) {
         return res.status(400).json({
           error_code: 1,
-          message:
-            "All fields (studentId, mentorId, rating) are required!",
+          message: "Please provide studentId, mentorId, and rating for feedback submission.",
         });
       }
-      if (rating < 0 || rating > 5) {
-        return res.status(400).json({ error_code: 1, message: "Rating has been from 1 to 5!" });
+      if (rating < 1 || rating > 5) {
+        return res.status(400).json({ error_code: 1, message: "Rating must be between 1 and 5." });
       }
       const validBooking = await StudentGroup.findOne({
         include: [
           {
             model: Booking,
+            as: 'booking',
             where: { mentorId: mentorId },
           },
         ],
@@ -29,10 +29,10 @@ class FeedbackController {
       if (!validBooking) {
         return res.status(403).json({
           error_code: 1,
-          message: "Student is not in a group booking with this mentor!",
+          message: "Student is not in a group booking with this mentor.",
         });
       }
-
+  
       const currentDate = new Date();
       const newFeedback = await Feedback.create({
         studentId,
@@ -43,7 +43,7 @@ class FeedbackController {
         updatedAt: currentDate,
         status: 1,
       });
-
+  
       const formattedFeedback = {
         ...newFeedback.get({ plain: true }),
         createdAt: formatTime(newFeedback.createdAt, formatter),
@@ -51,14 +51,14 @@ class FeedbackController {
       };
       return res.status(200).json({
         error_code: 0,
-        message: "Feedback submitted successfully",
+        message: "Feedback submitted successfully.",
         feedback: formattedFeedback,
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error_code: 1, message: "An error occurred while submitting feedback" });
+      return res.status(500).json({ error_code: 1, message: "An error occurred while submitting feedback." });
     }
-  };
+  };  
 }
 
 module.exports = new FeedbackController();
