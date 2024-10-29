@@ -50,8 +50,7 @@ class AdminController {
   async showMentorList(req, res) {
     try {
       const mentorList = await Mentor.findAll({
-        where:
-          { status: 1 },
+        where:{ status: 1 },
         include: {
           model: Skill,
           attributes: ['name'],
@@ -403,6 +402,7 @@ class AdminController {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
   }
+
   async getMentorsInEachSkill(req, res) {
     try {
       const mentorsInSkills = await MentorSkill.findAll({
@@ -426,8 +426,6 @@ class AdminController {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
   }
-
-
 }
 
 module.exports = new AdminController()

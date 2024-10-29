@@ -15,7 +15,9 @@ router.get('/disable-mentor/:id', Auth, AdminController.disableMentor);
 router.get('/activate-mentor/:id', Auth, AdminController.activateMentor);
 router.post('/login/validate', AdminController.validate);
 
-
+router.get('/total-mentor-and-student', Auth, AdminController.getMentorsAndStudentsQuantity);
+router.get('/total-booking', Auth, AdminController.getBookingQuantity);
+router.get('/mentors-in-each-skill', Auth, AdminController.getMentorsInEachSkill);
 
 router.get('/search-mentor-by-name', Auth, AdminController.searchMentorByName);
 router.get('/search-mentor-by-id', Auth, AdminController.searchMentorByMentorId);
