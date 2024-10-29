@@ -100,8 +100,7 @@ class ScheduleController {
             // endTime = startTime + slotDuration (hour)
             const endTime = new Date(startTime);
             endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
-
-            await sendMail('longhoang8204@gmail.com', 'New Slot Added', 'A new slot has been added to your schedule.', '<div>test</div>');
+            
             const slot = await MentorSlot.create({
                 slotStart: startTime,
                 slotEnd: endTime,
