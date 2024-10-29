@@ -3,6 +3,7 @@ const Mentor = require('../models/Mentor');
 const Skill = require('../models/Skill');
 const Semester = require('../models/Semester');
 const { Op } = require('sequelize');
+const { sendMail } = require('../../config/mail/mail');
 
 class ScheduleController {
     /*
@@ -100,6 +101,7 @@ class ScheduleController {
             const endTime = new Date(startTime);
             endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
 
+            await sendMail('longhoang8204@gmail.com', 'New Slot Added', 'A new slot has been added to your schedule.', '<div>test</div>');
             const slot = await MentorSlot.create({
                 slotStart: startTime,
                 slotEnd: endTime,
@@ -110,6 +112,7 @@ class ScheduleController {
                 description,
                 status: 1
             }, { raw: true });
+            
             return res.json({ error_code: 0, slot, message: 'Slot added successfully' });
         } catch (error) {
             return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });

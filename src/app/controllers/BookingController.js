@@ -6,8 +6,6 @@ const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
 
-Booking.associate({ Mentor });
-
 const response_status = {
     missing_fields: {
         error_code: 1,
@@ -260,10 +258,16 @@ class BookingController {
                     },
                     include: [
                         {
-                            model: Mentor,
-                            as: 'mentor'
+                            model: StudentGroup,
+                            as: 'studentGroups',
+                            include: [
+                                {
+                                    model: Student,
+                                    as: 'student'
+                                }
+                            ]
                         }
-                    ],
+                    ]
                 });
                 res.status(200).json(response_status.list_success(bookings));
             }
