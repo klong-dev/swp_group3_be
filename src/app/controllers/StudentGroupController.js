@@ -3,6 +3,7 @@ const Student = require("../models/Student");
 const Booking = require("../models/Booking");
 const Mentor = require("../models/Mentor");
 const { json } = require("express");
+const { invite_group } = require("../../utils/MailSenderUtils");
 
 const response_status = {
   add_success: (data) => {
@@ -79,6 +80,10 @@ class StudentGroupController {
         },
       });
 
+      const student = await Student.findByPk(studentGroupData.studentId);
+      if (!student) {
+        return res.status(404).json(response_status.data_not_found);
+      }
 
       if (!leader) {
         return res.status(404).json(response_status.data_not_found);
@@ -109,8 +114,9 @@ class StudentGroupController {
           studentId: member,
           rating: null,
           role: 0, // role 0 is member
-          status: 1,
+          status: 1, // pending invite
         });
+        await invite_group(student.email, "longhoang8204@gmail.com", studentGroupData.bookingId, member);
       }
       return res.status(200).json(response_status.add_success(null));
     } catch (error) {
@@ -118,6 +124,45 @@ class StudentGroupController {
     }
   }
 
+  async accept_group(req, res) {
+    try {
+      const { bookingId, memberId } = req.params;
+      if (!bookingId || !memberId) {
+        return res.status(400).json(response_status.missing_fields);
+      }
+      const studentGroup = await StudentGroup.findOne({
+        where: { bookingId: bookingId, studentId: memberId },
+      });
+      if (!studentGroup) {
+        return res.status(404).json(response_status.data_not_found);
+      }
+      studentGroup.status = 2;
+      await studentGroup.save();
+      return res.status(200).json({ error_code: 0, message: "Member accepted successfully" });
+    } catch (error) {
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
+    }
+  }
+
+  async reject_group(req, res) {
+    try {
+      const { bookingId, memberId } = req.params;
+      if (!bookingId || !memberId) {
+        return res.status(400).json(response_status.missing_fields);
+      }
+      const studentGroup = await StudentGroup.findOne({
+        where: { bookingId: bookingId, studentId: memberId },
+      });
+      if (!studentGroup) {
+        return res.status(404).json(response_status.data_not_found);
+      }
+      await studentGroup.destroy();
+      return res.status(200).json({ error_code: 0, message: "Member rejected successfully" });
+    } catch (error) {
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
+    }
+  }
+  
   // async removeStudentById(req, res) {
   //     try {
   //         const studentGroup = await StudentGroup.findOne({ where: { id: req.params.id } });

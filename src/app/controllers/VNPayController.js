@@ -18,7 +18,6 @@ class VNPayController {
             sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
         }
         return sorted;
-
     }
 
     createPaymentUrl = (req, res) => {
@@ -33,8 +32,9 @@ class VNPayController {
             vnp_TxnRef: `VNP${moment().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss")}`,
             vnp_OrderInfo: orderInfo,
             vnp_Locale: "vn",
+            vnp_BankCode: "NCB",
             vnp_ReturnUrl: vnpay.vnp_ReturnUrl,
-            vnp_IpAddr: "14.186.90.254", // Sử dụng địa chỉ IP cụ thể
+            vnp_IpAddr: "14.186.73.156", // Sử dụng địa chỉ IP cụ thể
             vnp_CreateDate: moment().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss"),
             vnp_OrderType: "topup",
             vnp_ExpireDate: moment().tz("Asia/Ho_Chi_Minh").add(1, "hours").format("YYYYMMDDHHmmss"),
