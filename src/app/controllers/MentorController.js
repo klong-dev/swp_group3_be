@@ -113,7 +113,7 @@ class SearchController {
 
       let availableSlots = [];
       const oneDayFromNow = new Date();
-      oneDayFromNow.setDate(oneDayFromNow.getHours() + 12); 
+      // oneDayFromNow.setDate(oneDayFromNow.getHours() + 12); 
 
       if (dates && Array.isArray(dates) && dates.length > 0) {
         availableSlots = await MentorSlot.findAll({
@@ -134,7 +134,7 @@ class SearchController {
             mentorId: mentorIds,
             status: 1,
             slotStart: {
-              [Op.gt]: oneDayFromNow, // Only future slots from 1 day ahead
+              [Op.gt]: oneDayFromNow,
             },
           },
         });

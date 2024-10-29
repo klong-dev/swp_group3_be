@@ -10,8 +10,7 @@ class FeedbackController {
       if (!studentId || !mentorId || !rating) {
         return res.status(400).json({
           error_code: 1,
-          message:
-            "Please provide studentId, mentorId, and rating for feedback submission.",
+          message: "Please provide studentId, mentorId, and rating for feedback submission.",
         });
       }
       if (rating < 1 || rating > 5) {
