@@ -190,8 +190,14 @@ class BookingController {
                     },
                     include: [
                         {
-                            model: Mentor,
-                            as: 'mentor'
+                            model: StudentGroup,
+                            as: 'studentGroups',
+                            include: [
+                                {
+                                    model: Student,
+                                    as: 'student'
+                                }
+                            ]
                         }
                     ],
                     order: [['startTime', 'ASC']],

@@ -5,6 +5,7 @@ class SemesterController {
     try {
       const latestSemester = await Semester.findOne({
         order: [['year', 'DESC'], ['id', 'DESC']],
+        raw: true,
       });
 
       if (!latestSemester) {
