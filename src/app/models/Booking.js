@@ -30,6 +30,10 @@ const Booking = sequelize.define('booking', {
       return moment(this.getDataValue('startTime')).format('YYYY-MM-DD HH:mm:ss');
     }
   },
+  cost: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
   endTime: {
     type: DataTypes.DATE,
     allowNull: false,
