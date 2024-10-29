@@ -404,6 +404,36 @@ class SearchController {
       return res.status(500).json({ error_code: 1, error });
     }
   };
+
+  editProfile = async (req, res) => {
+    try {
+      const { skillIds, description, mentorId } = req.body;
+      const mentor = await Mentor.findOne({
+        where: { accountId: mentorId },
+      });
+  
+      if (!mentor) {
+        return res.status(404).json({ error_code: 1, message: "Mentor not found" });
+      }
+      if (description) {
+        await mentor.update({ description });
+      }
+      if (skillIds && Array.isArray(skillIds) && skillIds.length > 0) {
+        await MentorSkill.destroy({ where: { mentorId: mentor.accountId } });
+        const newSkills = skillIds.map((skillId) => ({
+          mentorId: mentor.accountId,
+          skillId,
+          status: 1
+        }));
+        await MentorSkill.bulkCreate(newSkills);
+      }
+      return res.status(200).json({ error_code: 0, message: "Profile updated successfully" });
+    } catch (error) {
+      console.error("Error editing profile:", error);
+      return res.status(500).json({ error_code: 1, error });
+    }
+  };
+  
 }
 
 module.exports = new SearchController();
