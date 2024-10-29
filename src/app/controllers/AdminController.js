@@ -31,7 +31,7 @@ class AdminController {
   }
   async addSkill(req, res) {
     try {
-      const { name, imgPath } = req.body;  
+      const { name, imgPath } = req.body;
       if (!name || !imgPath) {
         return res.status(400).json({ error_code: 1, message: "Name and imgPath are required." });
       }
@@ -43,7 +43,7 @@ class AdminController {
       return res.status(201).json({ error_code: 0, message: "Skill added successfully.", skill: newSkill });
     } catch (error) {
       console.error("Error adding skill: ", error);
-      return res.status(500).json({error_code: 1, message: "An error occurred while adding the skill.",error});
+      return res.status(500).json({ error_code: 1, message: "An error occurred while adding the skill.", error });
     }
   }
 
@@ -60,6 +60,7 @@ class AdminController {
       });
       return res.json({ error_code: 0, mentorList });
     } catch (error) {
+      console.log(error)
       res.status(500).json({ error_code: 1, error });
     }
   }
@@ -86,19 +87,25 @@ class AdminController {
         return res.json({ error_code: 1, message: "No account matched" });
       }
 
-      const existingMentor = await Mentor.findOne({ where: { accountId } });
+      const existingMentor = await Mentor.findOne({
+        where: {
+          accountId,
+          status: 1
+        }
+      });
       if (existingMentor) {
         return res.json({ error_code: 2, message: "Account is already a mentor" });
       }
-      const newMentor = await Mentor.create({
-        accountId: student.accountId,
-        fullName: student.fullName,
-        email: student.email,
+      await Mentor.update({
         point: 50,
-        imgPath: student.imgPath,
         status: 1,
-      });
-      return res.json({ error_code: 0, message: "Promotion successful", mentor: newMentor });
+      },
+        { where: { accountId: student.accountId } })
+      await Student.update(
+        { isMentor: 1 },
+        { where: { accountId: student.accountId } }
+      )
+      return res.json({ error_code: 0, message: "Promotion successful" });
     } catch (error) {
       return res.status(500).json({ error_code: 1, error });
     }
@@ -215,7 +222,7 @@ class AdminController {
         where: { status: 0 },
       });
       if (inactiveMentors.length === 0) {
-        return res.json({ error_code: 1, inactiveMentors });
+        return res.json({ error_code: 1, message: "There is no mentor" });
       }
       res.status(200).json({ error_code: 0, mentors: inactiveMentors });
     } catch (error) {

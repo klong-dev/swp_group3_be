@@ -18,7 +18,7 @@ const MentorSlot = sequelize.define('mentor_slot', {
   },
   skillId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   cost: {
     type: DataTypes.FLOAT,

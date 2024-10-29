@@ -1,5 +1,6 @@
 const Mentor = require('../models/Mentor');
 const Student = require('../models/Student')
+const Skill = require('../models/Skill')
 const MentorSkill = require('../models/MentorSkill')
 class StudentController {
   async getStudentByAccountId(req, res) {
@@ -66,7 +67,7 @@ class StudentController {
           const { skillId, level } = skill;
           return await MentorSkill.create({
             skillId,
-            mentorId: applyingMentor.id,
+            mentorId: applyingMentor.accountId,
             level: level || 1,
             status: 1,
           });
@@ -81,9 +82,17 @@ class StudentController {
 
   async applyingMentors(req, res) {
     try {
-      const applyingMentors = await Mentor.findAll({ where: { status: 2 } });
+      const applyingMentors = await Mentor.findAll({
+        where:
+          { status: 2 },
+        include: {
+          model: Skill,
+          attributes: ['name'],
+          through: { attributes: [] },
+        },
+      });
       if (!applyingMentors || applyingMentors.length === 0) {
-        return res.status(404).json({ error_code: 1, message: "No student applying" });
+        return res.json({ error_code: 1, message: "No student applying" });
       }
       return res.status(200).json({ error_code: 0, applyingMentors });
     } catch (error) {

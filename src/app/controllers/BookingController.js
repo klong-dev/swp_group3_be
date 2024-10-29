@@ -6,8 +6,6 @@ const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
 
-Booking.associate({ Mentor });
-
 const response_status = {
     missing_fields: {
         error_code: 1,
@@ -224,6 +222,26 @@ class BookingController {
         }
     }
 
+    async listUnConfirmed(req, res) {
+        try {
+            const { mentorId } = req.params;
+            if (!mentorId) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            const bookings = await Booking.findAll({
+                where: {
+                    mentorId: mentorId,
+                    status: 1
+                },
+                order: [['startTime', 'ASC']]
+            });
+            res.status(200).json(response_status.list_success(bookings));
+        }
+        catch (error) {
+            res.status(500).json(response_status.internal_server_error(error));
+        }
+    }
+
     async list(req, res) {
         try {
             const { type, id } = req.params;
@@ -234,17 +252,22 @@ class BookingController {
                 const bookings = await Booking.findAll({
                     where: {
                         mentorId: id,
-                        status: 1,
                         startTime: {
                             [Op.gt]: new Date()
                         }
                     },
                     include: [
                         {
-                            model: Mentor,
-                            as: 'mentor'
+                            model: StudentGroup,
+                            as: 'studentGroups',
+                            include: [
+                                {
+                                    model: Student,
+                                    as: 'student'
+                                }
+                            ]
                         }
-                    ],
+                    ]
                 });
                 res.status(200).json(response_status.list_success(bookings));
             }
@@ -257,7 +280,6 @@ class BookingController {
                 const bookings = await Booking.findAll({
                     where: {
                         id: bookingIdList,
-                        status: 1,
                         startTime: {
                             [Op.gt]: new Date()
                         }
