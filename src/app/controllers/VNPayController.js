@@ -47,7 +47,7 @@ class VNPayController {
             vnp_OrderInfo: `payment_${item.id}_${mentor.id}_${student.id}`,
             vnp_Locale: "vn",
             vnp_BankCode: "NCB",
-            vnp_ReturnUrl: vnpay.vnp_ReturnUrl,
+            vnp_ReturnUrl: process.env.CLIENT_URL + "/payment/result",
             vnp_IpAddr: "14.186.73.156", // Sử dụng địa chỉ IP cụ thể
             vnp_CreateDate: moment().tz("Asia/Ho_Chi_Minh").format("YYYYMMDDHHmmss"),
             vnp_OrderType: "topup",
