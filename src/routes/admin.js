@@ -18,15 +18,11 @@ router.post('/login/validate', AdminController.validate);
 
 router.get('/total-mentor-and-student', Auth, AdminController.getMentorsAndStudentsQuantity);
 router.get('/total-booking', Auth, AdminController.getBookingQuantity);
-router.get('/mentors-in-each-skill', Auth, AdminController.getMentorsInEachSkill);
 
 router.get('/search-mentor-by-name', Auth, AdminController.searchMentorByName);
 router.get('/search-mentor-by-id', Auth, AdminController.searchMentorByMentorId);
 router.get('/search-student-by-name', Auth, AdminController.searchStudentByName);
 router.get('/search-student-by-id', Auth, AdminController.searchStudentByStudentId);
-
-// tại vì payload của token không có accountId, không thể dùng Auth middleware
-// lấy trực tiếp headers.authorization để lấy token ( xem trong AdminController.validAdmin )
 router.post('/valid', AdminController.validAdmin);
 
 module.exports = router

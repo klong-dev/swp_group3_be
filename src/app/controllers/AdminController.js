@@ -8,8 +8,6 @@ const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 
-Mentor.belongsToMany(Skill, { through: MentorSkill, foreignKey: 'mentorId' });
-Skill.belongsToMany(Mentor, { through: MentorSkill, foreignKey: 'skillId' });
 class AdminController {
   async validAdmin(req, res) {
     try {
@@ -50,7 +48,7 @@ class AdminController {
   async showMentorList(req, res) {
     try {
       const mentorList = await Mentor.findAll({
-        where:{ status: 1 },
+        where: { status: 1 },
         include: {
           model: Skill,
           attributes: ['name'],
@@ -398,30 +396,6 @@ class AdminController {
     try {
       const bookingsCount = await Booking.count();
       return res.status(200).json({ error_code: 0, bookings: bookingsCount });
-    } catch (error) {
-      return res.status(500).json({ error_code: 500, error: error.message });
-    }
-  }
-
-  async getMentorsInEachSkill(req, res) {
-    try {
-      const mentorsInSkills = await MentorSkill.findAll({
-        attributes: ['skillId', [sequelize.fn('COUNT', sequelize.col('mentorId')), 'mentorCount']],
-        group: ['skillId'],
-        include: [
-          {
-            model: Skill,
-            attributes: ['name'],
-          },
-        ],
-      });
-
-      const formattedData = mentorsInSkills.map((item) => ({
-        skill: item.Skill.name,
-        mentorCount: item.dataValues.mentorCount,
-      }));
-
-      return res.status(200).json({error_code: 0, formattedData});
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
