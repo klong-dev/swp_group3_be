@@ -1,6 +1,6 @@
-const Feedback = require("../models/Feedback");
-const StudentGroup = require("../models/StudentGroup");
 const Booking = require("../models/Booking");
+const StudentGroup = require("../models/StudentGroup");
+const Feedback = require("../models/Feedback");
 const { formatTime, formatter } = require("../../utils/MentorUtils");
 
 class FeedbackController {
@@ -10,17 +10,20 @@ class FeedbackController {
       if (!studentId || !mentorId || !rating) {
         return res.status(400).json({
           error_code: 1,
-          message: "Please provide studentId, mentorId, and rating for feedback submission.",
+          message:
+            "Please provide studentId, mentorId, and rating for feedback submission.",
         });
       }
       if (rating < 1 || rating > 5) {
-        return res.status(400).json({ error_code: 1, message: "Rating must be between 1 and 5." });
+        return res
+          .status(400)
+          .json({ error_code: 1, message: "Rating must be between 1 and 5." });
       }
       const validBooking = await StudentGroup.findOne({
         include: [
           {
             model: Booking,
-            as: 'booking',
+            as: "bookings",
             where: { mentorId: mentorId },
           },
         ],
@@ -32,7 +35,7 @@ class FeedbackController {
           message: "Student is not in a group booking with this mentor.",
         });
       }
-  
+
       const currentDate = new Date();
       const newFeedback = await Feedback.create({
         studentId,
@@ -43,7 +46,7 @@ class FeedbackController {
         updatedAt: currentDate,
         status: 1,
       });
-  
+
       const formattedFeedback = {
         ...newFeedback.get({ plain: true }),
         createdAt: formatTime(newFeedback.createdAt, formatter),
@@ -56,9 +59,12 @@ class FeedbackController {
       });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error_code: 1, message: "An error occurred while submitting feedback." });
+      return res.status(500).json({
+        error_code: 1,
+        message: "An error occurred while submitting feedback.",
+      });
     }
-  };  
+  };
 }
 
 module.exports = new FeedbackController();
