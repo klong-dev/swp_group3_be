@@ -1,6 +1,7 @@
 const Mentor = require('../models/Mentor');
 const Student = require('../models/Student');
 const Donate = require('../models/Donate');
+const Item = require('../models/Item');
 
 class DonateController {
     async getDonate(req, res) {
@@ -22,6 +23,10 @@ class DonateController {
                         {
                             model: Student,
                             as: "student"
+                        },
+                        {
+                            model: Item,
+                            as: "item"
                         }
                     ]
                 });
@@ -39,6 +44,10 @@ class DonateController {
                         {
                             model: Mentor,
                             as: "mentor"
+                        },
+                        {
+                            model: Item,
+                            as: "item"
                         }
                     ]
                 });
