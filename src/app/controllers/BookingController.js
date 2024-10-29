@@ -5,6 +5,7 @@ const MentorSlot = require('../models/MentorSlot');
 const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
+const { raw } = require('express');
 
 const response_status = {
     missing_fields: {
@@ -114,6 +115,7 @@ class BookingController {
             if (isavailable) {
                 // update slot status to booked
                 MentorSlot.update({ status: 0 }, { where: { id: availableSlot.id } });
+                Mentor.update({ point: mentor.point + semester.slotCost }, { where: { accountId: bookingData.mentorId } });
             }
 
             // check if student has enough point
@@ -126,6 +128,7 @@ class BookingController {
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
                 size: 999,
+                cost: semester.slotCost,
                 startTime: bookingData.startTime,
                 endTime: endTime,
                 status: 1 + (isavailable ? 1 : 0) // read the status above
@@ -141,7 +144,7 @@ class BookingController {
                 booking: {
                     ...booking.toJSON(),
                     startTime: bookingData.startTime,
-                    endTime: endTime
+                    endTime: endTime,
                 },
                 studentGroup: studentGroup
             }));

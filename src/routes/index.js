@@ -10,6 +10,7 @@ const schedule = require('./schedule')
 const item = require("./item")
 const vnpay = require("./vnpay")
 const mail = require('./mail')
+const transactions = require('./transaction')
 
 function routes(app) {
   app.use('/auth/google', google);
@@ -25,6 +26,8 @@ function routes(app) {
   app.use('/semester', semester);
   app.use('/item', item)
   app.use('/vnpay', vnpay)
+  app.use('/transaction', transactions)
+
 }
 
 module.exports = routes;
