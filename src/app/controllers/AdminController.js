@@ -103,9 +103,16 @@ class AdminController {
     }
   }
 
-  // async rejectMentorApplication(req, res) {
-
-  // }
+  async rejectMentorApplication(req, res) {
+    try {
+      const { mentorId } = req.body
+      const currentApplication = Mentor.findOne({ where: { accountId: mentorId, status: 2 } })
+      await currentApplication.update({ status: 0 })
+      res.status(200).json({error_code: 0, message: "Application rejected"})
+    } catch (error) {
+      return res.status(500).json({ error_code: 1, error });
+    }
+  }
 
   async startNewSemester(req, res) {
     try {
