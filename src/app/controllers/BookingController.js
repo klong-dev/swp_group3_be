@@ -138,7 +138,7 @@ class BookingController {
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
                 role: 1,
-                status: 1
+                status: 2
             });
             res.status(200).json(response_status.booking_success({
                 booking: {
@@ -212,10 +212,11 @@ class BookingController {
                         {
                             model: StudentGroup,
                             as: 'studentGroups',
+                            where: { status: 2 },
                             include: [
                                 {
                                     model: Student,
-                                    as: 'student'
+                                    as: 'student',
                                 }
                             ]
                         }
@@ -226,7 +227,7 @@ class BookingController {
             }
             if (type === 'student') {
                 const getGroup = await StudentGroup.findAll({
-                    where: { studentId: id },
+                    where: { studentId: id, status: 2 },
                     raw: true
                 });
                 const bookingIdList = getGroup.map(group => group.bookingId);
