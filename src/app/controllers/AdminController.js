@@ -84,20 +84,15 @@ class AdminController {
         return res.json({ error_code: 1, message: "No account matched" });
       }
 
-      const existingMentor = await Mentor.findOne({
-        where: {
-          accountId,
-          status: 1
-        }
-      });
+      const existingMentor = await Mentor.findOne({ where: { accountId, status: 1 } });
       if (existingMentor) {
         return res.json({ error_code: 2, message: "Account is already a mentor" });
       }
-      await Mentor.update({
-        point: 0,
-        status: 1,
-      },
-        { where: { accountId: student.accountId } })
+
+      await Mentor.update(
+        { point: 0, status: 1 },
+        { where: { accountId: student.accountId } }
+      )
       await Student.update(
         { isMentor: 1 },
         { where: { accountId: student.accountId } }
@@ -107,6 +102,10 @@ class AdminController {
       return res.status(500).json({ error_code: 1, error });
     }
   }
+
+  // async rejectMentorApplication(req, res) {
+
+  // }
 
   async startNewSemester(req, res) {
     try {
@@ -362,8 +361,6 @@ class AdminController {
         let wrongUsernameMsg = "Username or password is not correct";
         return res.json({ error_code: 1, message: wrongUsernameMsg })
       }
-
-      // const valid = await bcrypt.compare(password, user.password);
       const valid = password == user.password
       if (valid) {
         const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {

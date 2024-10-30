@@ -54,6 +54,7 @@ class StudentController {
       if (existingApplication) {
         return res.status(409).json({ error_code: 3, message: "Application already exists." });
       }
+      
       const applyingMentor = await Mentor.create({
         accountId,
         fullName,
