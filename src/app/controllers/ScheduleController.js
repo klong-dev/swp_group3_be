@@ -100,8 +100,7 @@ class ScheduleController {
             // endTime = startTime + slotDuration (hour)
             const endTime = new Date(startTime);
             endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
-
-            await sendMail('longhoang8204@gmail.com', 'New Slot Added', 'A new slot has been added to your schedule.', '<div>test</div>');
+            
             const slot = await MentorSlot.create({
                 slotStart: startTime,
                 slotEnd: endTime,
@@ -166,7 +165,7 @@ class ScheduleController {
             else
                 return res.status(400).json({ error_code: 0, message: 'Everything is up to date' });
         } catch (error) {
-            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
+            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
     }
 
@@ -193,7 +192,7 @@ class ScheduleController {
             );
             return res.json({ error_code: 0, message: 'Slot deleted successfully' });
         } catch (error) {
-            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
+            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
     }
 }

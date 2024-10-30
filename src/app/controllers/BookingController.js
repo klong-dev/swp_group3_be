@@ -138,7 +138,7 @@ class BookingController {
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
                 role: 1,
-                status: 1
+                status: 2
             });
             res.status(200).json(response_status.booking_success({
                 booking: {
@@ -177,6 +177,26 @@ class BookingController {
         }
     }
 
+    async deny(req, res) {
+        try {
+            if (!req.body.bookingId) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            const booking = await Booking.findByPk(req.body.bookingId);
+            if (!booking) {
+                return res.status(400).json(response_status.data_not_found);
+            }
+            if (booking.status === 0) {
+                return res.status(400).json({ error_code: 1, message: 'Booking is inactive' });
+            }
+            // update booking status to inactive
+            Booking.update({ status: 0 }, { where: { id: booking.id } });
+            return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
+        } catch (error) {
+            return res.status(500).json({ error_code: 5, error: error });
+        }
+    }
+
     async listAll(req, res) {
         try {
             const { type, id } = req.params;
@@ -190,8 +210,15 @@ class BookingController {
                     },
                     include: [
                         {
-                            model: Mentor,
-                            as: 'mentor'
+                            model: StudentGroup,
+                            as: 'studentGroups',
+                            where: { status: 2 },
+                            include: [
+                                {
+                                    model: Student,
+                                    as: 'student',
+                                }
+                            ]
                         }
                     ],
                     order: [['startTime', 'ASC']],
@@ -200,7 +227,7 @@ class BookingController {
             }
             if (type === 'student') {
                 const getGroup = await StudentGroup.findAll({
-                    where: { studentId: id },
+                    where: { studentId: id, status: 2 },
                     raw: true
                 });
                 const bookingIdList = getGroup.map(group => group.bookingId);
@@ -263,6 +290,7 @@ class BookingController {
                         {
                             model: StudentGroup,
                             as: 'studentGroups',
+                            where: { status: 2 },
                             include: [
                                 {
                                     model: Student,

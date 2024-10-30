@@ -1,5 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../config/db/index"); 
+const Student = require('./Student');
+
 const sequelize = db.sequelize;
 
 const Feedback = sequelize.define('feedback', {
@@ -28,5 +30,5 @@ const Feedback = sequelize.define('feedback', {
   timestamps: true,
   freezeTableName: true,
 });
-
+Feedback.belongsTo(Student, { foreignKey: 'studentId', as: 'student' });
 module.exports = Feedback;
