@@ -118,6 +118,8 @@ class AdminController {
       const currentName = currentSemester.name
       const currentYear = currentSemester.year
       const currentPoint = currentSemester.defaultPoint
+      const currentCost = currentSemester.slotCost
+      const currentDuration = currentSemester.slotDuration
 
       switch (currentName) {
         case "FALL":
@@ -139,6 +141,8 @@ class AdminController {
         name: nextName,
         year: nextYear,
         defaultPoint: currentPoint,
+        slotCost: currentCost,
+        slotDuration: currentDuration,
         status: 1
       })
       res.status(200).json({ error_code: 0, newSemester })
