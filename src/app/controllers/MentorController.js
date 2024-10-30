@@ -50,12 +50,10 @@ class SearchController {
           });
         }
       }
-      console.log(whereCondition);
 
       const { rows: mentors } = await Mentor.findAndCountAll({
         where: whereCondition,
       });
-      console.log(mentors);
 
       if (mentors.length === 0) {
         return res.json({
@@ -86,6 +84,7 @@ class SearchController {
       });
 
       const skillIds = [...new Set(mentorSkills.map((ms) => ms.skillId))];
+      console.log(skillIds);
 
       const skills = await Skill.findAll({
         where: {
@@ -104,7 +103,10 @@ class SearchController {
           acc[ms.mentorId] = [];
         }
         if (skillsMap[ms.skillId]) {
-          acc[ms.mentorId].push(skillsMap[ms.skillId]);
+          acc[ms.mentorId].push({
+            skillName: skillsMap[ms.skillId],
+            level: ms.level,
+          });
         }
         return acc;
       }, {});
@@ -113,7 +115,7 @@ class SearchController {
 
       let availableSlots = [];
       const oneDayFromNow = new Date();
-      oneDayFromNow.setDate(oneDayFromNow.getHours() + 12); 
+      // oneDayFromNow.setDate(oneDayFromNow.getHours() + 12);
 
       if (dates && Array.isArray(dates) && dates.length > 0) {
         availableSlots = await MentorSlot.findAll({
@@ -134,7 +136,7 @@ class SearchController {
             mentorId: mentorIds,
             status: 1,
             slotStart: {
-              [Op.gt]: oneDayFromNow, // Only future slots from 1 day ahead
+              [Op.gt]: oneDayFromNow,
             },
           },
         });
@@ -154,6 +156,22 @@ class SearchController {
       // availableSlots = availableSlots.filter(
       //   (slot) => !bookedSlotTimes.has(slot.slotStart)
       // );
+
+      const completedBookings = await Booking.findAll({
+        where: {
+          mentorId: mentorIds,
+          status: 2,
+        },
+      });
+
+      const completedBookingMap = {};
+      completedBookings.forEach((booking) => {
+        const mentorId = booking.mentorId;
+        if (!completedBookingMap[mentorId]) {
+          completedBookingMap[mentorId] = 0;
+        }
+        completedBookingMap[mentorId]++;
+      });
 
       const mentorAvailableIds = new Set(
         availableSlots.map((slot) => slot.mentorId)
@@ -196,6 +214,7 @@ class SearchController {
             ratingCount: mentorFeedbacks.length,
             skills: mentorSkillsMap[mentor.accountId] || [],
             availableSlots: mentorSlots,
+            completedBookings: completedBookingMap[mentor.accountId] || 0,
           };
         })
         .filter((mentor) => mentor !== null);
@@ -239,6 +258,7 @@ class SearchController {
   loadProfile = async (req, res) => {
     try {
       const { mentorId } = req.query;
+
       const mentor = await Mentor.findByPk(mentorId);
       if (!mentor) {
         return res
@@ -250,12 +270,29 @@ class SearchController {
         order: [["createdAt", "DESC"]],
       });
       const averageRating = calculateAverageRating(feedbacks);
-      const mentorSkills = await MentorSkill.findAll({ where: { mentorId } });
+
+      const mentorSkills = await MentorSkill.findAll({
+        where: { mentorId },
+      });
       const skillIds = mentorSkills.map((skill) => skill.skillId);
       const skills = await Skill.findAll({
         where: { id: skillIds },
       });
-      const skillNames = skills.map((skill) => skill.name);
+
+      const skillDetails = mentorSkills
+        .map((ms) => {
+          const skill = skills.find((s) => s.id === ms.skillId);
+          return skill ? { name: skill.name, level: ms.level } : null;
+        })
+        .filter((skill) => skill !== null);
+
+      const completedBookingsCount = await Booking.count({
+        where: {
+          mentorId,
+          status: 2,
+        },
+      });
+
       const {
         accountId,
         fullName,
@@ -265,6 +302,7 @@ class SearchController {
         imgPath,
         status,
       } = mentor;
+
       const mentorWithRating = {
         accountId,
         fullName,
@@ -274,8 +312,10 @@ class SearchController {
         imgPath,
         status,
         averageRating,
-        skills: skillNames,
+        skills: skillDetails,
+        completedBookings: completedBookingsCount,
       };
+
       return res.json({ error_code: 0, mentor: mentorWithRating });
     } catch (error) {
       console.log(error);
@@ -401,6 +441,39 @@ class SearchController {
       return res.status(200).json({ error_code: 0 });
     } catch (error) {
       console.error("Error rating students:", error);
+      return res.status(500).json({ error_code: 1, error });
+    }
+  };
+
+  editProfile = async (req, res) => {
+    try {
+      const { skillIds, description, mentorId } = req.body;
+      const mentor = await Mentor.findOne({
+        where: { accountId: mentorId },
+      });
+
+      if (!mentor) {
+        return res
+          .status(404)
+          .json({ error_code: 1, message: "Mentor not found" });
+      }
+      if (description) {
+        await mentor.update({ description });
+      }
+      if (skillIds && Array.isArray(skillIds) && skillIds.length > 0) {
+        await MentorSkill.destroy({ where: { mentorId: mentor.accountId } });
+        const newSkills = skillIds.map((skillId) => ({
+          mentorId: mentor.accountId,
+          skillId,
+          status: 1,
+        }));
+        await MentorSkill.bulkCreate(newSkills);
+      }
+      return res
+        .status(200)
+        .json({ error_code: 0, message: "Profile updated successfully" });
+    } catch (error) {
+      console.error("Error editing profile:", error);
       return res.status(500).json({ error_code: 1, error });
     }
   };
