@@ -136,6 +136,9 @@ class StudentGroupController {
       if (!studentGroup) {
         return res.status(404).json(response_status.data_not_found);
       }
+      if (studentGroup.status !== 1) {
+        return res.status(400).json({ error_code: 2, message: "Access denided" });
+      }
       studentGroup.status = 2;
       await studentGroup.save();
       return res.status(200).json({ error_code: 0, message: "Member accepted successfully" });
@@ -155,6 +158,9 @@ class StudentGroupController {
       });
       if (!studentGroup) {
         return res.status(404).json(response_status.data_not_found);
+      }
+      if (studentGroup.status !== 1) {
+        return res.status(400).json({ error_code: 2, message: "Access denided" });
       }
       await studentGroup.destroy();
       return res.status(200).json({ error_code: 0, message: "Member rejected successfully" });
