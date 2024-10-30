@@ -2,7 +2,6 @@ const StudentGroup = require("../models/StudentGroup");
 const Student = require("../models/Student");
 const Booking = require("../models/Booking");
 const Mentor = require("../models/Mentor");
-const { json } = require("express");
 const { invite_group } = require("../../utils/MailSenderUtils");
 
 const response_status = {
