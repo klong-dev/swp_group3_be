@@ -165,7 +165,7 @@ class ScheduleController {
             else
                 return res.status(400).json({ error_code: 0, message: 'Everything is up to date' });
         } catch (error) {
-            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
+            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
     }
 
@@ -192,7 +192,7 @@ class ScheduleController {
             );
             return res.json({ error_code: 0, message: 'Slot deleted successfully' });
         } catch (error) {
-            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.toString() });
+            return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
     }
 }

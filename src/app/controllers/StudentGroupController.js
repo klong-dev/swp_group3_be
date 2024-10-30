@@ -142,7 +142,7 @@ class StudentGroupController {
       await studentGroup.save();
       return res.status(200).json({ error_code: 0, message: "Member accepted successfully" });
     } catch (error) {
-      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error: error.message });
     }
   }
 
@@ -164,7 +164,7 @@ class StudentGroupController {
       await studentGroup.destroy();
       return res.status(200).json({ error_code: 0, message: "Member rejected successfully" });
     } catch (error) {
-      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error: error.message });
     }
   }
   
@@ -214,8 +214,7 @@ class StudentGroupController {
       }
       return res.status(200).json({ error_code: 0, mentor, group: studentGroup });
     } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error });
+      return res.status(500).json({ error_code: 5, message: "Internal Server Error", error: error.message });
     }
   }
 
