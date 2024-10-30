@@ -116,7 +116,7 @@ class StudentGroupController {
           role: 0, // role 0 is member
           status: 1, // pending invite
         });
-        await invite_group(student.email, member.email, studentGroupData.bookingId, member);
+        await invite_group(student.email, member.email, studentGroupData.bookingId, member.accountId);
       }
       return res.status(200).json(response_status.add_success(null));
     } catch (error) {

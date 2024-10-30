@@ -3,7 +3,7 @@ const StudentGroup = require('../app/controllers/StudentGroupController');
 const Auth = require('../middleware/AuthenticateJWT')
 const router = express.Router();
 
-router.post('/add', Auth, StudentGroup.add);
+router.post('/add', StudentGroup.add);
 router.get('/get', Auth, StudentGroup.get);
 router.get('/accept/:bookingId/:memberId', StudentGroup.accept_group);
 router.get('/reject/:bookingId/:memberId', StudentGroup.reject_group);
