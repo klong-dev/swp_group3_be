@@ -290,6 +290,7 @@ class BookingController {
                         {
                             model: StudentGroup,
                             as: 'studentGroups',
+                            where: { status: 2 },
                             include: [
                                 {
                                     model: Student,
