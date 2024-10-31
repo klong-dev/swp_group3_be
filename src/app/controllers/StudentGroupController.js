@@ -221,14 +221,13 @@ class StudentGroupController {
   }
   async getListPendingGroup(req, res) {
     try {
-      const { studentId } = req.query;
-      if (!studentId) {
+      const { accountId } = req.query;
+      if (!accountId) {
         return res.status(400).json(response_status.missing_fields);
       }
-  
       const pendingGroup = await StudentGroup.findAndCountAll({
         where: {
-          studentId,
+          studentId: accountId,
           status: 1,
         },
         include: [

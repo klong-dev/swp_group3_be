@@ -238,19 +238,22 @@ class SearchController {
   loadProfile = async (req, res) => {
     try {
       const { mentorId } = req.query;
-
+  
       const mentor = await Mentor.findByPk(mentorId);
       if (!mentor) {
         return res
           .status(404)
           .json({ error_code: 1, message: "Mentor not found" });
       }
+      
       const feedbacks = await Feedback.findAll({
         where: { mentorId },
         order: [["createdAt", "DESC"]],
       });
+      const ratingsCount = feedbacks.length; 
+      
       const averageRating = calculateAverageRating(feedbacks);
-
+  
       const mentorSkills = await MentorSkill.findAll({
         where: { mentorId },
       });
@@ -258,21 +261,21 @@ class SearchController {
       const skills = await Skill.findAll({
         where: { id: skillIds },
       });
-
+  
       const skillDetails = mentorSkills
         .map((ms) => {
           const skill = skills.find((s) => s.id === ms.skillId);
           return skill ? { name: skill.name, level: ms.level } : null;
         })
         .filter((skill) => skill !== null);
-
+  
       const completedBookingsCount = await Booking.count({
         where: {
           mentorId,
           status: 2,
         },
       });
-
+  
       const {
         accountId,
         fullName,
@@ -282,7 +285,7 @@ class SearchController {
         imgPath,
         status,
       } = mentor;
-
+  
       const mentorWithRating = {
         accountId,
         fullName,
@@ -292,16 +295,18 @@ class SearchController {
         imgPath,
         status,
         averageRating,
+        ratingsCount, 
         skills: skillDetails,
         completedBookings: completedBookingsCount,
       };
-
+  
       return res.json({ error_code: 0, mentor: mentorWithRating });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error_code: 1, message: "ERROR", error });
     }
   };
+  
 
   //1
   getListFeedback = async (req, res) => {
