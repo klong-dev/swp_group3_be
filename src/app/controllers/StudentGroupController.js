@@ -263,7 +263,7 @@ class StudentGroupController {
   
       return res.status(200).json({
         error_code: 0,
-        data: pendingGroup,
+        pendingGroup,
         message: "List of pending groups retrieved successfully",
       });
     } catch (error) {
@@ -272,11 +272,6 @@ class StudentGroupController {
         .json(response_status.internal_server_error(error));
     }
   }
-  
-
-  
-
-
 }
 
 module.exports = new StudentGroupController();
