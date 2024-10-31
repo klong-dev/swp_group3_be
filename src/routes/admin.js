@@ -16,6 +16,10 @@ router.get('/disable-mentor/:id', Auth, AdminController.disableMentor);
 router.get('/activate-mentor/:id', Auth, AdminController.activateMentor);
 router.post('/login/validate', AdminController.validate);
 
+router.post('/reject-application', AdminController.rejectMentorApplication);
+router.post('/update-complaint-status', Auth, AdminController.updateComplaintStatus);
+router.get('/pending-mentors', Auth, AdminController.getPendingMentors);
+
 router.get('/total-mentor-and-student', Auth, AdminController.getMentorsAndStudentsQuantity);
 router.get('/total-booking', Auth, AdminController.getBookingQuantity);
 
