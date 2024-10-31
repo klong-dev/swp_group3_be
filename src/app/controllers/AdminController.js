@@ -430,13 +430,16 @@ class AdminController {
       const complaints = await Complaint.findAll({ where: { status: 2} });
       return res.json({ error_code: 0, complaints });
     } catch (error) {
-      return res.status(500).json({ error_code: 1, error: error.message });
+      return res.status(500).json({ error_code: 5, error: error.message });
     }
   }
   // Admin: Update complaint status
   async updateComplaintStatus(req, res) {
     try {
       const { complaintId, status, adminResponse } = req.body;
+      if (!complaintId || !status) {
+        return res.json({ error_code: 1, message: 'Please provide complaintId and status' });
+      }
       const complaint = await Complaint.findByPk(complaintId);
       if (!complaint) {
         return res.json({ error_code: 1, message: 'Complaint not found' });
@@ -445,7 +448,7 @@ class AdminController {
       return res.json({ error_code: 0, message: 'Complaint status updated successfully', complaint });
     } catch (error) {
       console.error(error);
-      return res.json({ error_code: 1, message: 'Internal server error' });
+      return res.json({ error_code: 5, message: 'Internal server error' });
     }
   }
 }

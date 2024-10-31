@@ -1,6 +1,8 @@
 const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index')
 const sequelize = db.sequelize;
+const Mentor = require('./Mentor');
+const Student = require('./Student');
 
 const Complaint = sequelize.define('complaint', {
   id: {
@@ -13,7 +15,7 @@ const Complaint = sequelize.define('complaint', {
     allowNull: false
   },
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false
   },
   content: {
@@ -33,5 +35,18 @@ const Complaint = sequelize.define('complaint', {
   timestamps: true,
   freezeTableName: true
 });
+
+
+Complaint.hasOne(Student, {
+  sourceKey: 'studentId',
+  foreignKey: 'accountId',
+  as: 'student'
+})
+
+Complaint.hasOne(Mentor, {
+  sourceKey: 'mentorId',
+  foreignKey: 'accountId',
+  as: 'mentor'
+})
 
 module.exports = Complaint;
