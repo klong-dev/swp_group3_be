@@ -12,11 +12,11 @@ const Donate = sequelize.define('donate', {
     autoIncrement: true
   },
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   studentId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   itemId: {

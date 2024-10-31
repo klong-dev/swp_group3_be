@@ -12,7 +12,7 @@ const MentorSkill = sequelize.define('mentor_skill', {
     references: { model: Skill, key: 'id' }
   },
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true,
     references: { model: Mentor, key: 'accountId' }

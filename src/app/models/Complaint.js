@@ -9,7 +9,7 @@ const Complaint = sequelize.define('complaint', {
     autoIncrement: true
   },
   studentId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false
   },
   mentorId: {

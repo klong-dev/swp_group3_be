@@ -25,7 +25,7 @@ const MentorSlot = sequelize.define('mentor_slot', {
     allowNull: false
   },
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false
   },
   size: {

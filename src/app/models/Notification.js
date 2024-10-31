@@ -9,7 +9,7 @@ const Notification = sequelize.define('notification', {
     autoIncrement: true
   },
   accountId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   title: {

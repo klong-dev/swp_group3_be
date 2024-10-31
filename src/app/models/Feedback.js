@@ -6,11 +6,11 @@ const sequelize = db.sequelize;
 
 const Feedback = sequelize.define('feedback', {
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   studentId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
     primaryKey: true
   },
