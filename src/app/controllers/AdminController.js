@@ -6,6 +6,7 @@ const MentorSkill = require('../models/MentorSkill')
 const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
+const Complaint = require('../models/Complaint')
 
 class AdminController {
   async validAdmin(req, res) {
@@ -421,6 +422,15 @@ class AdminController {
       return res.status(200).json({ error_code: 0, bookings: bookingsCount });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+
+  async getPendingComplaints(req, res) {
+    try {
+      const complaints = await Complaint.findAll({ where: { status: 2} });
+      return res.json({ error_code: 0, complaints });
+    } catch (error) {
+      return res.status(500).json({ error_code: 1, error: error.message });
     }
   }
   // Admin: Update complaint status
