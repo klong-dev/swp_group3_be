@@ -7,6 +7,8 @@ router.post('/add', StudentGroup.add);
 router.get('/get', Auth, StudentGroup.get);
 router.get('/accept/:bookingId/:memberId', StudentGroup.accept_group);
 router.get('/reject/:bookingId/:memberId', StudentGroup.reject_group);
+router.get('/list-pending-group', StudentGroup.getListPendingGroup);
+
 // // router.post('/remove/:id', Auth, StudentGroup.removeStudentById);
 // router.get('/get/:studentId?', StudentGroup.get);
 // router.get('/get/:mentorId?', StudentGroup.get);

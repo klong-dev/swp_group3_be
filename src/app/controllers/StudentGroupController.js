@@ -3,6 +3,8 @@ const Student = require("../models/Student");
 const Booking = require("../models/Booking");
 const Mentor = require("../models/Mentor");
 const { invite_group } = require("../../utils/MailSenderUtils");
+const Skill = require("../models/Skill");
+const MentorSkill = require("../models/MentorSkill");
 
 const response_status = {
   add_success: (data) => {
@@ -217,6 +219,62 @@ class StudentGroupController {
       return res.status(500).json({ error_code: 5, message: "Internal Server Error", error: error.message });
     }
   }
+  async getListPendingGroup(req, res) {
+    try {
+      const { studentId } = req.query;
+      if (!studentId) {
+        return res.status(400).json(response_status.missing_fields);
+      }
+  
+      const pendingGroup = await StudentGroup.findAndCountAll({
+        where: {
+          studentId,
+          status: 1,
+        },
+        include: [
+          {
+            model: Booking,
+            as: "bookings",
+            include: [
+              {
+                model: Mentor,
+                as: "mentor",
+                attributes: ["fullName", "email"],
+                include: [
+                  {
+                    model: Skill,
+                    as: "skills", 
+                    attributes: ["name"],
+                    through: {
+                      model: MentorSkill,
+                      attributes: ["level"],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: Student,
+            as: "student"
+          }
+        ],
+      });
+  
+      return res.status(200).json({
+        error_code: 0,
+        data: pendingGroup,
+        message: "List of pending groups retrieved successfully",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json(response_status.internal_server_error(error));
+    }
+  }
+  
+
+  
 
 
 }
