@@ -3,7 +3,6 @@ const Student = require('../models/Student')
 const Semester = require('../models/Semester')
 const Admin = require('../models/Admin')
 const MentorSkill = require('../models/MentorSkill')
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
@@ -52,13 +51,29 @@ class AdminController {
         include: {
           model: Skill,
           attributes: ['name'],
-          through: { attributes: [] },
+          through: { attributes: ['level'] },
         },
       });
       return res.json({ error_code: 0, mentorList });
     } catch (error) {
       console.log(error)
       res.status(500).json({ error_code: 1, error });
+    }
+  }
+
+  async getPendingMentors(req, res) {
+    try {
+      const pendingMentors = await Mentor.findAll({
+        where: { status: 2 },
+        include: {
+          model: Skill,
+          attributes: ['name'],
+          through: { attributes: ['level'] },
+        },
+      });
+      return res.json({ error_code: 0, pendingMentors });
+    } catch (error) {
+      res.status(500).json({ error_code: 1, error: error.message });
     }
   }
 
@@ -406,6 +421,21 @@ class AdminController {
       return res.status(200).json({ error_code: 0, bookings: bookingsCount });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
+    }
+  }
+  // Admin: Update complaint status
+  async updateComplaintStatus(req, res) {
+    try {
+      const { complaintId, status, adminResponse } = req.body;
+      const complaint = await Complaint.findByPk(complaintId);
+      if (!complaint) {
+        return res.json({ error_code: 1, message: 'Complaint not found' });
+      }
+      await complaint.update({ status, adminResponse });
+      return res.json({ error_code: 0, message: 'Complaint status updated successfully', complaint });
+    } catch (error) {
+      console.error(error);
+      return res.json({ error_code: 1, message: 'Internal server error' });
     }
   }
 }
