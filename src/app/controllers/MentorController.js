@@ -66,7 +66,6 @@ class SearchController {
       }
 
       const mentorIds = mentors.map((mentor) => mentor.accountId);
-      console.log(mentorIds);
 
       const feedbacks = await Feedback.findAll({
         where: {
@@ -84,7 +83,6 @@ class SearchController {
       });
 
       const skillIds = [...new Set(mentorSkills.map((ms) => ms.skillId))];
-      console.log(skillIds);
 
       const skills = await Skill.findAll({
         where: {
@@ -111,8 +109,6 @@ class SearchController {
         return acc;
       }, {});
 
-      const { Op } = require("sequelize");
-
       let availableSlots = [];
       const oneDayFromNow = new Date();
       // oneDayFromNow.setDate(oneDayFromNow.getHours() + 12);
@@ -123,7 +119,7 @@ class SearchController {
             mentorId: mentorIds,
             status: 1,
             slotStart: {
-              [Op.or]: dates.map((date) => ({
+              [Op.and]: dates.map((date) => ({
                 [Op.between]: [`${date} 00:00:00`, `${date} 23:59:59`],
                 [Op.gt]: oneDayFromNow,
               })),
@@ -141,22 +137,6 @@ class SearchController {
           },
         });
       }
-
-      // const bookedSlots = await Booking.findAll({
-      //   where: {
-      //     mentorId: mentorIds,
-      //     status: 2,
-      //   },
-      // });
-
-      // const bookedSlotTimes = new Set(
-      //   bookedSlots.map((slot) => slot.slotStart)
-      // );
-
-      // availableSlots = availableSlots.filter(
-      //   (slot) => !bookedSlotTimes.has(slot.slotStart)
-      // );
-
       const completedBookings = await Booking.findAll({
         where: {
           mentorId: mentorIds,
@@ -377,19 +357,33 @@ class SearchController {
   async getMentorSkills(req, res) {
     try {
       const { mentorId } = req.query;
+
       const mentorSkills = await MentorSkill.findAll({
         where: { mentorId },
       });
+
       const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skillId);
+
       const skills = await Skill.findAll({
         where: { id: skillIds },
       });
-      return res.json({ error_code: 0, skills });
+
+      const skillsMap = skills.reduce((acc, skill) => {
+        acc[skill.id] = skill.name;
+        return acc;
+      }, {});
+      console.log(skillsMap);
+
+      const mentorSkillsWithLevels = mentorSkills.map((mentorSkill) => ({
+        skillId: mentorSkill.skillId,
+        skillName: skillsMap[mentorSkill.skillId],
+        level: mentorSkill.level,
+      }));
+
+      return res.json({ error_code: 0, mentorSkillsWithLevels });
     } catch (error) {
       console.log(error);
-      return res
-        .status(500)
-        .json({ error_code: 1, message: "ERROR", error: error.message });
+      return res.status(500).json({ error_code: 1, message: "ERROR", error: error.message });
     }
   }
 
@@ -477,6 +471,42 @@ class SearchController {
       return res.status(500).json({ error_code: 1, error });
     }
   };
+
+  selectTopMentor = async (req, res) => {
+    try {
+      const mentors = await Mentor.findAll({ where: { status: 1 } });
+      console.log(mentors);
+      const mentorRatings = await Promise.all(
+        mentors.map(async (mentor) => {
+          const feedbacks = await Feedback.findAll({
+            where: { mentorId: mentor.accountId }
+          });
+          
+          const averageRating = calculateAverageRating(feedbacks);
+          return {
+            mentor,
+            averageRating
+          };
+        })
+      );
+  
+      mentorRatings.sort((a, b) => b.averageRating - a.averageRating);
+  
+      const topMentors = mentorRatings.slice(0, 3).map((entry) => ({
+        accountId: entry.mentor.accountId,
+        fullName: entry.mentor.fullName,
+        email: entry.mentor.email,
+        averageRating: entry.averageRating
+      }));
+  
+      return res.json({ error_code: 0, topMentors });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error_code: 1, error });
+    }
+  };
+  
+  
 }
 
 module.exports = new SearchController();

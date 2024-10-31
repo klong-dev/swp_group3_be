@@ -9,4 +9,5 @@ router.get('/skills', MentorController.getMentorSkills);
 router.get('/loadskills', MentorController.loadAllSkills);
 router.post('/rating-student', MentorController.ratingStudent);
 router.post('/edit-profile', MentorController.editProfile);
+router.get('/top-mentor', MentorController.selectTopMentor);
 module.exports = router
