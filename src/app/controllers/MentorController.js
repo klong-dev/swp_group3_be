@@ -496,6 +496,7 @@ class SearchController {
         accountId: entry.mentor.accountId,
         fullName: entry.mentor.fullName,
         email: entry.mentor.email,
+        imgPath: entry.mentor.imgPath,
         averageRating: entry.averageRating
       }));
   
