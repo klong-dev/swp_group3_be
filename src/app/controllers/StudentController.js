@@ -38,6 +38,7 @@ class StudentController {
 
   async applyToBeMentor(req, res) {
     try {
+      let applyingMentor
       const { skills, studentId } = req.body;
 
       if (!Array.isArray(skills) || !studentId) {
@@ -50,18 +51,16 @@ class StudentController {
 
       const { accountId, fullName, email, imgPath } = student;
 
-      const existingApplication = await Mentor.findOne({ where: { accountId } });
+      const existingApplication = await Mentor.findOne({ where: { accountId, status: 2 } });
       if (existingApplication) {
         return res.status(409).json({ error_code: 3, message: "Application already exists." });
       }
-      const applyingMentor = await Mentor.create({
-        accountId,
-        fullName,
-        email,
-        imgPath,
-        point: 0,
-        status: 2, // pending
-      });
+
+      const existingMentorAccount = await Mentor.findOne({ where: { accountId, status: 0 } })
+      if (existingMentorAccount) {
+        applyingMentor = await existingMentorAccount.update({ accountId, fullName, email, imgPath, point: 0, status: 2, })
+      }
+      applyingMentor = await Mentor.create({ accountId, fullName, email, imgPath, point: 0, status: 2, }); // pending
       const mentorSkills = await Promise.all(
         skills.map(async (skill) => {
           const { skillId, level } = skill;

@@ -12,7 +12,7 @@ const Booking = sequelize.define('booking', {
     autoIncrement: true
   },
   mentorId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
     references: {
       model: 'mentor',

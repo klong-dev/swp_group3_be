@@ -12,7 +12,8 @@ const vnpay = require("./vnpay")
 const mail = require('./mail')
 const transactions = require('./transaction')
 const donate = require('./donate')
-
+const notification = require('./notification')
+const complaint = require('./complaint')
 function routes(app) {
   app.use('/auth/google', google);
   app.use('/auth/google/callback', google);
@@ -29,6 +30,8 @@ function routes(app) {
   app.use('/vnpay', vnpay)
   app.use('/transaction', transactions)
   app.use('/donate', donate)
+  app.use('/notification', notification)
+  app.use('/complaint', complaint)
 }
 
 module.exports = routes;
