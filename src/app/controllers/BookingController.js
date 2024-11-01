@@ -120,6 +120,7 @@ class BookingController {
             // ================ BOOKING =============== //
             // minus student point by semester default point
             Student.update({ point: student.point - semester.slotCost }, { where: { accountId: bookingData.studentId } });
+            Mentor.update({ point: mentor.point + semester.slotCost }, { where: { accountId: bookingData.mentorId } });
             // update slot status to inactive
             MentorSlot.update({ status: 0 }, { where: { id: bookingData.slotId } });
 
@@ -157,8 +158,8 @@ class BookingController {
 
     async cancel(req, res) {
         try {
-            const { bookingId } = req.params;
-            if (!bookingId) {
+            const { type, bookingId } = req.params;
+            if (!type || !bookingId) {
                 return res.status(400).json(response_status.missing_fields);
             }
             const booking = await Booking.findByPk(bookingId);
@@ -174,9 +175,11 @@ class BookingController {
             // update slot status to active
             // MentorSlot.update({ status: 1 }, { where: { id: booking.slotId } });
             // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
-            // refund for mentor
-            const mentor = await Mentor.findByPk(booking.mentorId);
-            Mentor.update({ point: mentor.point + booking.cost / 2 }, { where: { accountId: booking.mentorId } });
+            // remove and penalty 50% points
+            if (type === 'mentor') {
+                const mentor = await Mentor.findByPk(booking.mentorId);
+                Mentor.update({ point: mentor.point - (booking.cost + booking.cost / 2) }, { where: { accountId: booking.mentorId } });
+            }
             return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         }
         catch (error) {
