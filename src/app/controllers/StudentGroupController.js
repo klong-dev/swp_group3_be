@@ -225,7 +225,7 @@ class StudentGroupController {
       if (!accountId) {
         return res.status(400).json(response_status.missing_fields);
       }
-      const pendingGroup = await StudentGroup.findAndCountAll({
+      const pendingGroup = await StudentGroup.findAll({
         where: {
           studentId: accountId,
           status: 1,
