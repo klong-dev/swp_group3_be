@@ -72,6 +72,7 @@ class StudentController {
           });
         })
       );
+      await NotificationUtils.createSystemNotification(student.accountId, 'applyToBeMentor')
       return res.status(201).json({ error_code: 0, applyingMentor, mentorSkills });
     } catch (error) {
       console.error("Error applying to be a mentor:", error);

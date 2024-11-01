@@ -44,6 +44,34 @@ const notifications = {
     title: 'Notification',
     message: 'You have just been rated'
   },
+  promoteToMentor: {
+    title: 'Notification',
+    message: 'Congratulations, you have been promoted to a mentor'
+  },
+  disableMentor: {
+    title: 'Notification',
+    message: 'Your mentor account has been disabled by the administrator'
+  },
+  activateMentor: {
+    title: 'Notification',
+    message: 'Your mentor account has been activated by the administrator'
+  },
+  rejectMentorApplication: {
+    title: 'Notification',
+    message: 'Your mentor application has been rejected by the administrator'
+  },
+  resolveComplaint: {
+    title: 'Notification',
+    message: 'Your complaint has been resolved by the administrator'
+  },
+  rejectComplaint: {
+    title: 'Notification',
+    message: 'Your complaint has been rejected by the administrator'
+  },
+  applyToBeMentor: {
+    title: 'Notification',
+    message: 'Your mentor application has been sent successfully'
+  }
 }
 
 module.exports = notifications;
