@@ -12,6 +12,7 @@ router.get('/get/:id', Auth, BookingController.get);
 router.post('/update', Auth, BookingController.update);
 router.get('/delete/:id', Auth, BookingController.delete);
 router.get('/confirm/:mentorId', Auth, BookingController.listUnConfirmed);
+router.get('/cancel/:type/:bookingId', Auth, BookingController.cancel);
 // router.get('/search-by-mentor', Auth, BookingController.searchByMentor);
 
 module.exports = router;

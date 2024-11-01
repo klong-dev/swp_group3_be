@@ -57,7 +57,9 @@ class ScheduleController {
         }
     }
 
-     async addMentorSlot(req, res) {
+
+
+    async addMentorSlot(req, res) {
         try {
             const { slotStart, mentorId, description } = req.body;
             if (!slotStart || !mentorId) {
@@ -100,7 +102,7 @@ class ScheduleController {
             // endTime = startTime + slotDuration (hour)
             const endTime = new Date(startTime);
             endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
-            
+
             const slot = await MentorSlot.create({
                 slotStart: startTime,
                 slotEnd: endTime,
@@ -111,7 +113,7 @@ class ScheduleController {
                 description,
                 status: 1
             }, { raw: true });
-            
+
             return res.json({ error_code: 0, slot, message: 'Slot added successfully' });
         } catch (error) {
             return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
@@ -120,38 +122,65 @@ class ScheduleController {
 
     async updateMentorSlot(req, res) {
         try {
-            const slotId = req.params.slotId;
-            const { slotStart, skillId, mentorId, description } = req.body;
-            if (!slotId || !slotStart || !skillId || !mentorId) {
+            const { slotId, slotStart, mentorId, description } = req.body;
+            if (!slotId || !slotStart|| !mentorId) {
                 return res.status(400).json({ error_code: 1, message: 'Missing required fields' });
             }
 
+            // is slot exist?
+            const slot = await MentorSlot.findByPk(slotId);
+            if (!slot) {
+                return res.status(400).json({ error_code: 2, message: 'Slot not found' });
+            }
             // is mentor exist?
             const mentor = await Mentor.findByPk(mentorId);
             if (!mentor) {
                 return res.status(400).json({ error_code: 2, message: 'Mentor not found' });
             }
-
-            // is skill exist?
-            const skill = await Skill.findByPk(skillId);
-            if (!skill) {
-                return res.status(400).json({ error_code: 2, message: 'Skill not found' });
+            const semester = await Semester.findOne({ order: [['id', 'DESC']], where: { status: 1 } });
+            if (!semester) {
+                return res.status(400).json({ error_code: 1, message: 'No active semester' });
             }
 
             // validate slot start & slot end
             if (new Date(slotStart) < new Date()) {
-                return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
+                return res.status(400).json({ error_code: 3, message: 'Slot start must be in the future' });
             }
-            const slotEnd = new Date(slotStart);
-            slotEnd.setHours(slotEnd.getHours() + 3);
 
-            const slot = await MentorSlot.update({
-                slotStart,
-                slotEnd,
-                skillId,
+            const startTime = new Date(slotStart);
+            const endTime = new Date(slotStart);
+            // endTime = startTime + slotDuration (hour)
+            endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
+
+             // check slotStart is contained between slotStart and slotEnd of any slot of mentor
+            const availableSlot = await MentorSlot.findAll({
+                where: {
+                    mentorId,
+                    status: 1,
+                    slotStart: {
+                        [Op.lte]: startTime
+                    },
+                    slotEnd: {
+                        [Op.gte]: startTime
+                    },
+                    id: {
+                        [Op.not]: slotId // not include the current slot
+                    }
+                }
+            });
+            if (availableSlot.length > 0) {
+                return res.status(400).json({ error_code: 1, message: 'startTime not accepted', availableSlot });
+            }
+
+            console.log(mentorId, slotId, startTime, endTime, description, semester.slotCost);
+
+            const slotUpdate = await MentorSlot.update({
+                slotStart: startTime,
+                slotEnd: endTime,
+                skillId: slot.skillId,
                 mentorId,
                 size: 999,
-                cost: 10, // cost
+                cost: semester.slotCost,
                 description,
                 status: 1
             }, {
@@ -160,10 +189,10 @@ class ScheduleController {
                 },
                 raw: true
             });
-            if (slot[0] >= 1)
-                return res.json({ error_code: 0, message: "Slot updated successfully" });
+            if (slotUpdate[0] >= 1)
+                return res.status(200).json({ error_code: 0, message: "Slot updated successfully"});
             else
-                return res.status(400).json({ error_code: 0, message: 'Everything is up to date' });
+                return res.status(200).json({ error_code: 0, message: 'Everything is up to date'});
         } catch (error) {
             return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
@@ -177,7 +206,12 @@ class ScheduleController {
             }
 
             // is slot exist?
-            const slot = await MentorSlot.findByPk(slotId);
+            const slot = await MentorSlot.findOne({
+                where: {
+                    id: slotId,
+                    status: 1
+                }
+            });
             if (!slot) {
                 return res.status(400).json({ error_code: 2, message: 'Slot not found' });
             }

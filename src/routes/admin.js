@@ -20,6 +20,8 @@ router.post('/login/validate', AdminController.validate);
 router.post('/reject-application', AdminController.rejectMentorApplication);
 router.get('/pending-mentors', Auth, AdminController.getPendingMentors);
 router.post('/update-complaint-status', Auth, AdminController.updateComplaintStatus);
+// router.get('/pending-complaint', Auth, AdminController.getPendingComplaints);
+
 router.get('/total-mentor-and-student', Auth, AdminController.getMentorsAndStudentsQuantity);
 router.get('/total-booking', Auth, AdminController.getBookingQuantity);
 

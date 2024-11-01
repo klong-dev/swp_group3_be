@@ -55,14 +55,14 @@ const response_status = {
         return {
             error_code: 7,
             message: 'Internal server errors',
-            error: error
+            error: error.message
         }
     }
 }
 
 /*
     status 0: inactive
-    status 1: pending
+    status 1: cancelled
     status 2: confirmed
 */
 class BookingController {
@@ -71,14 +71,13 @@ class BookingController {
             const bookingData = {
                 mentorId: req.body.mentorId,
                 studentId: req.body.studentId,
-                startTime: req.body.startTime,
+                slotId: req.body.slotId,
                 status: 1
             };
-            if (!bookingData.mentorId || !bookingData.studentId || !bookingData.startTime) {
+            if (!bookingData.mentorId || !bookingData.studentId) {
                 res.status(400).json(response_status.missing_fields);
                 return;
             }
-
             // ================ LOAD AND VALIDATE MODEL =============== //
             // check if student and mentor exist
             const student = await Student.findByPk(bookingData.studentId);
@@ -95,61 +94,96 @@ class BookingController {
             if (!semester) {
                 return res.status(400).json({ error_code: 1, message: 'No active semester' });
             }
+            // get slot
+            const slot = await MentorSlot.findByPk(bookingData.slotId);
+            if (!slot) {
+                return res.status(400).json({ error_code: 1, message: 'Slot not exist' });
+            }
             // =============================== //
 
-            // validate slot start
-            if (new Date(bookingData.startTime) < new Date()) {
+            // ================ VALIDATE =============== //
+            // check if slot is available
+            if (slot.status === 0) {
+                return res.status(400).json({ error_code: 1, message: 'Slot not available' });
+            }
+            // check if slot is in the past
+            if (new Date(slot.slotStart) < new Date()) {
+                console.log(`${new Date(slot.slotStart)} < ${new Date()}`);
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
             }
-            bookingData.startTime = new Date(bookingData.startTime);
-            // endTime = startTime + slotDuration (hour)
-            const endTime = new Date(bookingData.startTime);
-            endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
-            const availableSlot = await MentorSlot.findOne({
-                where: {
-                    mentorId: bookingData.mentorId,
-                    slotStart: bookingData.startTime,
-                }
-            });
-            const isavailable = availableSlot && availableSlot.status === 1;
-            if (isavailable) {
-                // update slot status to booked
-                MentorSlot.update({ status: 0 }, { where: { id: availableSlot.id } });
-                Mentor.update({ point: mentor.point + semester.slotCost }, { where: { accountId: bookingData.mentorId } });
-            }
-
             // check if student has enough point
             if (student.point < semester.slotCost) {
                 return res.status(400).json({ error_code: 1, message: 'Not enough point' });
             }
+            // ========================================= //
+
+            // ================ BOOKING =============== //
             // minus student point by semester default point
             Student.update({ point: student.point - semester.slotCost }, { where: { accountId: bookingData.studentId } });
+            Mentor.update({ point: mentor.point + semester.slotCost }, { where: { accountId: bookingData.mentorId } });
+            // update slot status to inactive
+            MentorSlot.update({ status: 0 }, { where: { id: bookingData.slotId } });
 
+            // create booking
             const booking = await Booking.create({
                 mentorId: bookingData.mentorId,
                 size: 999,
                 cost: semester.slotCost,
-                startTime: bookingData.startTime,
-                endTime: endTime,
-                status: 1 + (isavailable ? 1 : 0) // read the status above
+                startTime: slot.slotStart,
+                endTime: slot.slotEnd,
+                status: 2
             },
             );
+            // create student group
             const studentGroup = await StudentGroup.create({
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
                 role: 1,
                 status: 2
             });
-            res.status(200).json(response_status.booking_success({
+            return res.status(200).json(response_status.booking_success({
                 booking: {
                     ...booking.toJSON(),
-                    startTime: bookingData.startTime,
-                    endTime: endTime,
+                    startTime: slot.slotStart,
+                    endTime: slot.slotEnd,
                 },
                 studentGroup: studentGroup
             }));
+            // ========================================= //
         } catch (error) {
             console.log(error);
+            res.status(500).json(response_status.internal_server_error(error));
+        }
+    }
+
+    async cancel(req, res) {
+        try {
+            const { type, bookingId } = req.params;
+            if (!type || !bookingId) {
+                return res.status(400).json(response_status.missing_fields);
+            }
+            const booking = await Booking.findByPk(bookingId);
+            if (!booking) {
+                return res.status(400).json(response_status.data_not_found);
+            }
+            if (booking.status !== 2) {
+                return res.status(400).json({ error_code: 1, message: 'Booking has been cancelled' });
+            }
+
+            // update booking status to inactive
+            Booking.update({ status: 1 }, { where: { id: booking.id } });
+            // update slot status to active
+            // MentorSlot.update({ status: 1 }, { where: { id: booking.slotId } });
+            // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
+            // remove and penalty 50% points
+            if (type === 'mentor') {
+                await Mentor.decrement('point', { by: booking.cost + booking.cost / 2, where: { accountId: booking.mentorId } });
+                const studentGroup = await StudentGroup.findOne({ where: { bookingId: booking.id, role: 1 } });
+                await Student.increment('point', { by: booking.cost, where: { accountId: studentGroup.studentId } });
+            }
+            return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
+        }
+        catch (error) {
             res.status(500).json(response_status.internal_server_error(error));
         }
     }
