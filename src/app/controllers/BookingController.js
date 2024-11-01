@@ -177,10 +177,9 @@ class BookingController {
             // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
             // remove and penalty 50% points
             if (type === 'mentor') {
-                const mentor = await Mentor.findByPk(booking.mentorId);
-                Mentor.update({ point: mentor.point - (booking.cost + booking.cost / 2) }, { where: { accountId: booking.mentorId } });
+                await Mentor.decrement('point', { by: booking.cost + booking.cost / 2, where: { accountId: booking.mentorId } });
                 const studentGroup = await StudentGroup.findOne({ where: { bookingId: booking.id, role: 1 } });
-                Student.update({ point: studentGroup.point + booking.cost }, { where: { accountId: studentGroup.studentId } });
+                await Student.increment('point', { by: booking.cost, where: { accountId: studentGroup.studentId } });
             }
             return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         }
