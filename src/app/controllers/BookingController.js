@@ -62,9 +62,8 @@ const response_status = {
 }
 
 /*
-    status 0: inactive
-    status 1: cancelled
-    status 2: confirmed
+    status: 0 - inactive
+    status: 1 - active
 */
 class BookingController {
     async book(req, res) {
@@ -132,7 +131,7 @@ class BookingController {
                 cost: semester.slotCost,
                 startTime: slot.slotStart,
                 endTime: slot.slotEnd,
-                status: 2
+                status: 1
             });
             // create student group
             const studentGroup = await StudentGroup.create({
@@ -143,12 +142,14 @@ class BookingController {
             });
 
             TransactionHistory.create({
+                bookingId: booking.id,
                 accountId: bookingData.studentId,
                 point: semester.slotCost,
                 type: 0,
                 description: 'Book mentor slot'
             });
             TransactionHistory.create({
+                bookingId: booking.id,
                 accountId: bookingData.mentorId,
                 point: semester.slotCost,
                 type: 1,
@@ -184,7 +185,7 @@ class BookingController {
             }
 
             // update booking status to inactive
-            Booking.update({ status: 1 }, { where: { id: booking.id } });
+            Booking.update({ status: 0 }, { where: { id: booking.id } });
             // update slot status to active
             const isNotExistSameSlot = await MentorSlot.findOne({ where: { slotStart: booking.startTime, mentorId: booking.id, status: 1 } });
             if (!isNotExistSameSlot) {
@@ -197,12 +198,14 @@ class BookingController {
                 await Mentor.decrement('point', { by: booking.cost + booking.cost / 2, where: { accountId: booking.mentorId } });
                 await Student.increment('point', { by: booking.cost, where: { accountId: studentGroup.studentId } });
                 TransactionHistory.create({
+                    bookingId: booking.id,
                     accountId: booking.mentorId,
                     point: booking.cost + booking.cost / 2,
                     type: 3,
                     description: 'Penalty for cancel booking'
                 });
                 TransactionHistory.create({
+                    bookingId: booking.id,
                     accountId: studentGroup.studentId,
                     point: booking.cost,
                     type: 2,
@@ -232,7 +235,7 @@ class BookingController {
                 return res.status(400).json({ error_code: 1, message: 'Booking is inactive' });
             }
             // update booking status to confirmed
-            Booking.update({ status: 2 }, { where: { id: booking.id } });
+            Booking.update({ status: 1 }, { where: { id: booking.id } });
             return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         } catch (error) {
             return res.status(500).json({ error_code: 5, error: error });
@@ -274,7 +277,6 @@ class BookingController {
                         {
                             model: StudentGroup,
                             as: 'studentGroups',
-                            where: { status: 2 },
                             include: [
                                 {
                                     model: Student,

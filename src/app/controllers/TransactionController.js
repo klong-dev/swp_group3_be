@@ -25,6 +25,9 @@ class TransactionController {
                         {
                             model: StudentGroup,
                             as: 'studentGroups',
+                            where: {
+                                status: 2
+                            },
                         },
                     ],
                 }
