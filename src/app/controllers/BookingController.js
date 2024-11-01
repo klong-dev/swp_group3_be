@@ -179,6 +179,8 @@ class BookingController {
             if (type === 'mentor') {
                 const mentor = await Mentor.findByPk(booking.mentorId);
                 Mentor.update({ point: mentor.point - (booking.cost + booking.cost / 2) }, { where: { accountId: booking.mentorId } });
+                const studentGroup = await StudentGroup.findOne({ where: { bookingId: booking.id, role: 1 } });
+                Student.update({ point: studentGroup.point + booking.cost }, { where: { accountId: studentGroup.studentId } });
             }
             return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         }
