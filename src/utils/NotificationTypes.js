@@ -40,6 +40,10 @@ const notifications = {
     title: 'Notification',
     message: 'Thanh you for you support about complaint'
   },
+  feedbackNotification: {
+    title: 'Notification',
+    message: 'You have just been rated'
+  },
 }
 
 module.exports = notifications;

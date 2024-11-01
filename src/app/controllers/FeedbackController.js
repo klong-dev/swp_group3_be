@@ -2,7 +2,9 @@ const Booking = require("../models/Booking");
 const StudentGroup = require("../models/StudentGroup");
 const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
+const createSystemNotification = require('../../utils/NotificationUtils')
 const { formatTime, formatter } = require("../../utils/MentorUtils");
+const NotificationUtils = require("../../utils/NotificationUtils");
 
 class FeedbackController {
   submitFeedback = async (req, res) => {
@@ -23,22 +25,22 @@ class FeedbackController {
       }
 
       // Verify if the student is in a booking with this mentor
-      const validBooking = await StudentGroup.findOne({
-        include: [
-          {
-            model: Booking,
-            as: "bookings",
-            where: { mentorId: mentorId },
-          },
-        ],
-        where: { studentId: studentId },
-      });
-      if (!validBooking) {
-        return res.status(403).json({
-          error_code: 1,
-          message: "Student is not in a group booking with this mentor.",
-        });
-      }
+      // const validBooking = await StudentGroup.findOne({
+      //   include: [
+      //     {
+      //       model: Booking,
+      //       as: "bookings",
+      //       where: { mentorId: mentorId },
+      //     },
+      //   ],
+      //   where: { studentId: studentId },
+      // });
+      // if (!validBooking) {
+      //   return res.status(403).json({
+      //     error_code: 1,
+      //     message: "Student is not in a group booking with this mentor.",
+      //   });
+      // }
 
       const currentDate = new Date();
 
@@ -71,7 +73,7 @@ class FeedbackController {
         createdAt: formatTime(newFeedback.createdAt, formatter),
         updatedAt: formatTime(newFeedback.updatedAt, formatter),
       };
-
+      await NotificationUtils.createSystemNotification(mentorId,'feedbackNotification');
       return res.status(200).json({
         error_code: 0,
         message: "Feedback submitted successfully.",

@@ -430,14 +430,15 @@ class SearchController {
       const studentBookings = await StudentGroup.findAll({
         where: { bookingId },
       });
-
       if (!studentBookings.length) {
         return res.status(404).json({ error_code: 1, error });
       }
       const updatePromises = studentBookings.map((studentBookings) =>
         studentBookings.update({ rating })
       );
+      const studentIds = studentBookings.map((studentBooking) => studentBooking.studentId);
       await Promise.all(updatePromises);
+      await NotificationUtils.createSystemNotification(studentIds,'feedbackNotification');
       return res.status(200).json({ error_code: 0 });
     } catch (error) {
       console.error("Error rating students:", error);
