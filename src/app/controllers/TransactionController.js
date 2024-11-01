@@ -1,4 +1,8 @@
 const TransactionHistory = require('../models/TransactionHistory');
+const Student = require('../models/Student');
+const Mentor = require('../models/Mentor');
+const StudentGroup = require('../models/StudentGroup');
+const Booking = require('../models/Booking');
 class TransactionController {
     async list(req, res) {
         try {
@@ -9,11 +13,25 @@ class TransactionController {
             const transaction = await TransactionHistory.findAll({
                 where: {
                     accountId: id,
+                },
+                include: {
+                    model: Booking,
+                    as: 'booking',
+                    include: [
+                        {
+                            model: Mentor,
+                            as: 'mentor',
+                        },
+                        {
+                            model: StudentGroup,
+                            as: 'studentGroups',
+                        },
+                    ],
                 }
             });
             return res.status(200).json(transaction);
         } catch (error) {
-            return res.status(500).json({ error: error.message }); 
+            return res.status(500).json({ error: error.message });
         }
     }
 }
