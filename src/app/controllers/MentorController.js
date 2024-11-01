@@ -182,11 +182,12 @@ class SearchController {
                 size: slot.size,
                 description: slot.description,
               })) || [];
-          const { accountId, fullName, email, point, imgPath, status } = mentor;
+          const { accountId, fullName, email, description, point, imgPath, status } = mentor;
           return {
             accountId,
             fullName,
             email,
+            description,
             point,
             imgPath,
             status,
