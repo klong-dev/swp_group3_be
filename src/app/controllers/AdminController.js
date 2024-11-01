@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
 const { Op } = require('sequelize');
 const Complaint = require('../models/Complaint')
+const NotificationUtils = require('../../utils/NotificationUtils')
 
 class AdminController {
   async validAdmin(req, res) {
@@ -109,6 +110,7 @@ class AdminController {
         { point: 0, status: 1 },
         { where: { accountId: student.accountId } }
       )
+      await NotificationUtils.createSystemNotification(student.accountId, 'promoteToMentor')
       await Student.update(
         { isMentor: 1 },
         { where: { accountId: student.accountId } }
@@ -124,6 +126,7 @@ class AdminController {
       const { mentorId } = req.body
       const currentApplication = Mentor.findOne({ where: { accountId: mentorId, status: 2 } })
       await currentApplication.update({ status: 0 })
+      await NotificationUtils.createSystemNotification(mentorId, 'rejectMentorApplication')
       res.status(200).json({ error_code: 0, message: "Application rejected" })
     } catch (error) {
       return res.status(500).json({ error_code: 1, error: error.message });
@@ -265,6 +268,7 @@ class AdminController {
       student.isMentor = 0
       await mentor.save();
       await student.save();
+      await NotificationUtils.createSystemNotification(student.accountId, 'disableMentor')
       res.status(200).json({ error_code: 0, message: 'Mentor disabled successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error: error.message });
@@ -283,6 +287,7 @@ class AdminController {
       student.isMentor = 1;
       await mentor.save();
       await student.save();
+      await NotificationUtils.createSystemNotification(mentor.accountId, 'activateMentor')
       res.status(200).json({ error_code: 0, message: 'Mentor activated successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
@@ -440,6 +445,13 @@ class AdminController {
         return res.json({ error_code: 1, message: 'Complaint not found' });
       }
       await complaint.update({ status });
+      if (status === 1) {
+        await NotificationUtils.createSystemNotification(complaint.studentId, 'resolveComplaint')
+        await NotificationUtils.createSystemNotification(complaint.mentorId, 'resolveComplaint')
+      } else {
+        await NotificationUtils.createSystemNotification(complaint.studentId, 'rejectComplaint')
+        await NotificationUtils.createSystemNotification(complaint.mentorId, 'rejectComplaint')
+      }
       return res.json({ error_code: 0, message: 'Complaint status updated successfully', complaint });
     } catch (error) {
       console.error(error);
