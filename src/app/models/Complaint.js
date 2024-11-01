@@ -27,10 +27,6 @@ const Complaint = sequelize.define('complaint', {
     defaultValue: 2,
     allowNull: false
   },
-  adminResponse: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  }
 }, {
   timestamps: true,
   freezeTableName: true

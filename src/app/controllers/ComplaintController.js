@@ -9,7 +9,7 @@ class ComplaintController {
       if (!studentId || !mentorId || !content) {
         return res.status(400).json({ error_code: 1, message: 'Please provide studentId, mentorId and content' });
       }
-      const complaint = await Complaint.create({ studentId, mentorId, content });
+      const complaint = await Complaint.create({ studentId, mentorId, content, status: 1 });
 
       return res.json({ error_code: 0, message: 'Complaint created successfully', complaint });
     } catch (error) {
@@ -40,10 +40,14 @@ class ComplaintController {
     }
   }
 
-  async getPendingComplaints(req, res) {
-    try {
+  async getComplaintsByStatus(req, res) {
+    try { 
+      const { status } = req.params; // 0: pending, 1: approved
+      if (!status) {
+        return res.status(400).json({ error_code: 1, message: 'Please provide status' });
+      }
       const complaints = await Complaint.findAll({
-        where: { status: 1 },
+        where: { status },
         include: [{
           model: Student,
           as: 'student'

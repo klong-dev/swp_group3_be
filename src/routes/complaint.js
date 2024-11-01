@@ -5,6 +5,6 @@ const Auth = require('../middleware/AuthenticateJWT');
 
 router.post('/create', Auth, ComplaintController.createComplaint);
 router.get('/student/:studentId', Auth, ComplaintController.getStudentComplaints);
-router.get('/pending', Auth, ComplaintController.getPendingComplaints);
+router.get('/pending-by-status/:status', Auth, ComplaintController.getComplaintsByStatus);
 
 module.exports = router;

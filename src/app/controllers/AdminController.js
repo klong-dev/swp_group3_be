@@ -275,11 +275,14 @@ class AdminController {
     try {
       const mentorId = req.params.id;
       const mentor = await Mentor.findByPk(mentorId);
+      const student = await Student.findByPk(mentorId);
       if (!mentor || mentor.status === 1) {
         return res.status(404).json({ error_code: 1, message: 'Mentor not found or already active' });
       }
       mentor.status = 1;
+      student.isMentor = 1;
       await mentor.save();
+      await student.save();
       res.status(200).json({ error_code: 0, message: 'Mentor activated successfully' });
     } catch (error) {
       res.status(500).json({ error_code: 1, error });
@@ -428,7 +431,7 @@ class AdminController {
   // Admin: Update complaint status
   async updateComplaintStatus(req, res) {
     try {
-      const { complaintId, status, adminResponse } = req.body;
+      const { complaintId, status } = req.body;
       if (!complaintId || !status) {
         return res.json({ error_code: 1, message: 'Please provide complaintId and status' });
       }
@@ -436,7 +439,7 @@ class AdminController {
       if (!complaint) {
         return res.json({ error_code: 1, message: 'Complaint not found' });
       }
-      await complaint.update({ status, adminResponse });
+      await complaint.update({ status });
       return res.json({ error_code: 0, message: 'Complaint status updated successfully', complaint });
     } catch (error) {
       console.error(error);
