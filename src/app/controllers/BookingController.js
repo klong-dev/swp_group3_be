@@ -180,7 +180,7 @@ class BookingController {
             if (!booking) {
                 return res.status(400).json(response_status.data_not_found);
             }
-            if (booking.status !== 2) {
+            if (booking.status !== 1) {
                 return res.status(400).json({ error_code: 1, message: 'Booking has been cancelled' });
             }
 
