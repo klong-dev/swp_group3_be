@@ -425,14 +425,6 @@ class AdminController {
     }
   }
 
-  async getPendingComplaints(req, res) {
-    try {
-      const complaints = await Complaint.findAll({ where: { status: 2} });
-      return res.json({ error_code: 0, complaints });
-    } catch (error) {
-      return res.status(500).json({ error_code: 5, error: error.message });
-    }
-  }
   // Admin: Update complaint status
   async updateComplaintStatus(req, res) {
     try {
