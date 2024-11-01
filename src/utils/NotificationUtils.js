@@ -1,5 +1,5 @@
 const Notification = require('../app/models/Notification');
-
+const notifications = require('./NotificationTypes');
 class NotificationUtils {
   async createNotification(data) {
     try {
@@ -7,6 +7,7 @@ class NotificationUtils {
         accountId: data.accountId,
         title: data.title,
         message: data.message,
+        type: data.type
       });
     } catch (error) {
       throw new Error(`Error creating notification: ${error.message}`);
@@ -14,18 +15,7 @@ class NotificationUtils {
   }
 
   async createSystemNotification(accountId, action) {
-    const notifications = {
-      booking: {
-        title: 'New Booking',
-        message: 'You have a new booking request'
-      },
-      message: {
-        title: 'New Message',
-        message: 'You have received a new message'
-      },
-
-    };
-
+    // get notifications variable from NotificationType.js
     const notificationData = notifications[action];
     if (notificationData) {
       return await this.createNotification({ accountId, ...notificationData });
