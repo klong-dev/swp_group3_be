@@ -25,22 +25,22 @@ class FeedbackController {
       }
 
       // Verify if the student is in a booking with this mentor
-      // const validBooking = await StudentGroup.findOne({
-      //   include: [
-      //     {
-      //       model: Booking,
-      //       as: "bookings",
-      //       where: { mentorId: mentorId },
-      //     },
-      //   ],
-      //   where: { studentId: studentId },
-      // });
-      // if (!validBooking) {
-      //   return res.status(403).json({
-      //     error_code: 1,
-      //     message: "Student is not in a group booking with this mentor.",
-      //   });
-      // }
+      const validBooking = await StudentGroup.findOne({
+        include: [
+          {
+            model: Booking,
+            as: "bookings",
+            where: { mentorId: mentorId },
+          },
+        ],
+        where: { studentId: studentId },
+      });
+      if (!validBooking) {
+        return res.status(403).json({
+          error_code: 1,
+          message: "Student is not in a group booking with this mentor.",
+        });
+      }
 
       const currentDate = new Date();
 
