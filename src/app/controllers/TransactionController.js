@@ -1,8 +1,4 @@
-const Mentor = require('../models/Mentor');
-const Student = require('../models/Student')
-const Booking = require('../models/Booking');
-const StudentGroup = require('../models/StudentGroup');
-
+const TransactionHistory = require('../models/TransactionHistory');
 class TransactionController {
     async list(req, res) {
         try {
