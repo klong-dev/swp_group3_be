@@ -6,88 +6,16 @@ const StudentGroup = require('../models/StudentGroup');
 class TransactionController {
     async list(req, res) {
         try {
-            const { type, id } = req.params;
-            let transactions = [];
-            if (type === 'mentor') {
-                const bookings = await Booking.findAll(
-                    {
-                        where: { mentorId: id },
-                        include: [
-                            {
-                                model: StudentGroup,
-                                as: 'studentGroups',
-                                include: [
-                                    {
-                                        model: Student,
-                                        as: 'student'
-                                    }
-                                ]
-                            }
-                        ]
-                    });
-                for (const booking of bookings) {
-                    if (booking.status === 2) {
-                        let studentList = [];
-                        for (const group of booking.studentGroups) {
-                            const student = {...{role: group.role}, ...group.student.dataValues};
-                            studentList.push(student);
-                        }
-                        transactions.push({
-                            bookingId: booking.id,
-                            startTime: booking.startTime,
-                            endTime: booking.endTime,
-                            cost: booking.cost,
-                            type: 1,
-                            students: studentList
-                        });
-                    }
-                } 
-            } else if(type === 'student') {
-                const getGroup = await StudentGroup.findAll({
-                    where: { studentId: id },
-                });
-                const bookingIdList = getGroup.map(group => group.bookingId);
-                const bookings = await Booking.findAll({
-                    where: { id: bookingIdList },
-                    include: [
-                        {
-                            model: Mentor,
-                            as: 'mentor'
-                        }
-                    ],
-                    order: [['startTime', 'ASC']]
-                });
-                for (const booking of bookings) {
-                    if (booking.status === 0) {
-                        transactions.push({
-                            bookingId: booking.id,
-                            startTime: booking.startTime,
-                            endTime: booking.endTime,
-                            cost: booking.cost,
-                            type: 1,
-                            mentor: booking.mentor
-                        });
-                        transactions.push({
-                            bookingId: booking.id,
-                            startTime: booking.startTime,
-                            endTime: booking.endTime,
-                            cost: booking.cost,
-                            type: 0,
-                            mentor: booking.mentor
-                        });
-                    } else {
-                        transactions.push({
-                            bookingId: booking.id,
-                            startTime: booking.startTime,
-                            endTime: booking.endTime,
-                            cost: booking.cost,
-                            type: 0,
-                            mentor: booking.mentor
-                        });
-                    }
-                } 
+            const { id } = req.params;
+            if (!id) {
+                return res.status(400).json({ error: "Missing required fields" });
             }
-            return res.json({ transactions });
+            const transaction = await TransactionHistory.findAll({
+                where: {
+                    accountId: id,
+                }
+            });
+            return res.status(200).json(transaction);
         } catch (error) {
             return res.status(500).json({ error: error.message }); 
         }

@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
 const { raw } = require('express');
+const TransactionHistory = require('../models/TransactionHistory');
 
 const response_status = {
     missing_fields: {
@@ -132,14 +133,26 @@ class BookingController {
                 startTime: slot.slotStart,
                 endTime: slot.slotEnd,
                 status: 2
-            },
-            );
+            });
             // create student group
             const studentGroup = await StudentGroup.create({
                 bookingId: booking.id,
                 studentId: bookingData.studentId,
                 role: 1,
                 status: 2
+            });
+
+            TransactionHistory.create({
+                accountId: bookingData.studentId,
+                point: semester.slotCost,
+                type: 0,
+                description: 'Book mentor slot'
+            });
+            TransactionHistory.create({
+                accountId: bookingData.mentorId,
+                point: semester.slotCost,
+                type: 1,
+                description: 'Book mentor slot'
             });
             return res.status(200).json(response_status.booking_success({
                 booking: {
@@ -179,10 +192,22 @@ class BookingController {
             }
             // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
             // remove and penalty 50% points
+            const studentGroup = await StudentGroup.findOne({ where: { bookingId: booking.id, role: 1 } });
             if (type === 'mentor') {
                 await Mentor.decrement('point', { by: booking.cost + booking.cost / 2, where: { accountId: booking.mentorId } });
-                const studentGroup = await StudentGroup.findOne({ where: { bookingId: booking.id, role: 1 } });
                 await Student.increment('point', { by: booking.cost, where: { accountId: studentGroup.studentId } });
+                TransactionHistory.create({
+                    accountId: booking.mentorId,
+                    point: booking.cost + booking.cost / 2,
+                    type: 3,
+                    description: 'Penalty for cancel booking'
+                });
+                TransactionHistory.create({
+                    accountId: studentGroup.studentId,
+                    point: booking.cost,
+                    type: 2,
+                    description: 'Refund booking because mentor cancel'
+                });
             }
             return res.status(200).json(response_status.booking_success({ error_code: 0, booking: booking }));
         }
