@@ -9,7 +9,7 @@ class ComplaintController {
       if (!studentId || !mentorId || !content) {
         return res.status(400).json({ error_code: 1, message: 'Please provide studentId, mentorId and content' });
       }
-      const complaint = await Complaint.create({ studentId, mentorId, content, status: 1 });
+      const complaint = await Complaint.create({ studentId, mentorId, content, status: 0 });
 
       return res.json({ error_code: 0, message: 'Complaint created successfully', complaint });
     } catch (error) {
