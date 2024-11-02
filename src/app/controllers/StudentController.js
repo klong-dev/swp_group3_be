@@ -1,7 +1,8 @@
 const Mentor = require('../models/Mentor');
 const Student = require('../models/Student')
 const Skill = require('../models/Skill')
-const MentorSkill = require('../models/MentorSkill')
+const MentorSkill = require('../models/MentorSkill');
+const NotificationUtils = require('../../utils/NotificationUtils');
 class StudentController {
   async getStudentByAccountId(req, res) {
     try {
@@ -38,6 +39,7 @@ class StudentController {
 
   async applyToBeMentor(req, res) {
     try {
+      let mentorSkills
       let applyingMentor
       const { skills, studentId } = req.body;
 
@@ -59,9 +61,9 @@ class StudentController {
       const existingMentorAccount = await Mentor.findOne({ where: { accountId, status: 0 } })
       if (existingMentorAccount) {
         applyingMentor = await existingMentorAccount.update({ accountId, fullName, email, imgPath, point: 0, status: 2, })
-      }
-      applyingMentor = await Mentor.create({ accountId, fullName, email, imgPath, point: 0, status: 2, }); // pending
-      const mentorSkills = await Promise.all(
+      } else{
+        applyingMentor = await Mentor.create({ accountId, fullName, email, imgPath, point: 0, status: 2, }); // pending
+        mentorSkills = await Promise.all(
         skills.map(async (skill) => {
           const { skillId, level } = skill;
           return await MentorSkill.create({
@@ -72,6 +74,8 @@ class StudentController {
           });
         })
       );
+      }
+      
       await NotificationUtils.createSystemNotification(student.accountId, 'applyToBeMentor')
       return res.status(201).json({ error_code: 0, applyingMentor, mentorSkills });
     } catch (error) {
