@@ -163,6 +163,12 @@ class ScheduleController {
                     slotEnd: {
                         [Op.gte]: startTime
                     },
+                    slotStart: {
+                        [Op.lte]: endTime
+                    },
+                    slotEnd: {
+                        [Op.gte]: endTime
+                    },
                     id: {
                         [Op.not]: slotId // not include the current slot
                     }
