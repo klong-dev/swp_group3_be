@@ -433,7 +433,7 @@ class AdminController {
     }
   }
 
-  // Admin: Update complaint status
+  // Admin: Update complaint status 1: approved 2: reject
   async updateComplaintStatus(req, res) {
     try {
       const { complaintId, status } = req.body;
