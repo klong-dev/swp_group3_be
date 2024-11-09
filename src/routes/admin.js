@@ -30,7 +30,7 @@ router.get('/search-mentor-by-id', Auth, AdminController.searchMentorByMentorId)
 router.get('/search-student-by-name', Auth, AdminController.searchStudentByName);
 router.get('/search-student-by-id', Auth, AdminController.searchStudentByStudentId);
 
-router.post('/delete-skill', AdminController.deleteSkill);
-router.post('/update-skill', AdminController.updateSKill);
+router.post('/delete-skill', Auth, AdminController.deleteSkill);
+router.post('/update-skill', Auth, AdminController.updateSKill);
 
 module.exports = router
