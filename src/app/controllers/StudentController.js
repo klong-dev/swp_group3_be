@@ -1,7 +1,7 @@
 const Mentor = require('../models/Mentor');
 const Student = require('../models/Student')
 const Skill = require('../models/Skill')
-const MentorSkill = require('../models/MentorSkill');
+const MentorSkill = require('../models/MentorSkill')
 const NotificationUtils = require('../../utils/NotificationUtils');
 class StudentController {
   async getStudentByAccountId(req, res) {

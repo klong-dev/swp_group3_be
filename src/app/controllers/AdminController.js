@@ -124,7 +124,7 @@ class AdminController {
   async rejectMentorApplication(req, res) {
     try {
       const { mentorId } = req.body
-      const currentApplication = Mentor.findOne({ where: { accountId: mentorId, status: 2 } })
+      const currentApplication = await Mentor.findOne({ where: { accountId: mentorId, status: 2 } })
       await currentApplication.update({ status: 0 })
       await NotificationUtils.createSystemNotification(mentorId, 'rejectMentorApplication')
       res.status(200).json({ error_code: 0, message: "Application rejected" })
@@ -433,7 +433,7 @@ class AdminController {
     }
   }
 
-  // Admin: Update complaint status
+  // Admin: Update complaint status 1: approved 2: reject
   async updateComplaintStatus(req, res) {
     try {
       const { complaintId, status } = req.body;

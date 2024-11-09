@@ -5,8 +5,8 @@ const MentorSlot = require('../models/MentorSlot');
 const { Op } = require('sequelize');
 const Semester = require('../models/Semester');
 const Mentor = require('../models/Mentor');
-const { raw } = require('express');
 const TransactionHistory = require('../models/TransactionHistory');
+const NotificationUtils = require('../../utils/NotificationUtils');
 
 const response_status = {
     missing_fields: {
@@ -141,6 +141,10 @@ class BookingController {
                 status: 2
             });
 
+            // notify
+            NotificationUtils.createSystemNotification(bookingData.mentorId, 'bookingForMentor');
+            NotificationUtils.createSystemNotification(bookingData.studentId, 'bookingForStudent');
+
             TransactionHistory.create({
                 bookingId: booking.id,
                 accountId: bookingData.studentId,
@@ -162,7 +166,7 @@ class BookingController {
                     endTime: slot.slotEnd,
                 },
                 studentGroup: studentGroup
-            }));
+            })); 
             // ========================================= //
         } catch (error) {
             console.log(error);
