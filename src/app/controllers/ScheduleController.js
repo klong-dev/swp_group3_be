@@ -81,27 +81,31 @@ class ScheduleController {
                 return res.status(400).json({ error_code: 1, message: 'Slot start must be in the future' });
             }
             const startTime = new Date(slotStart);
-
+            // endTime = startTime + slotDuration (hour)
+            const endTime = new Date(startTime);
+            endTime.setMinutes(endTime.getMinutes() + semester.slotDuration);
             // check slotStart is contained between slotStart and slotEnd of any slot of mentor
             const availableSlot = await MentorSlot.findAll({
                 where: {
                     mentorId,
                     status: 1,
-                    slotStart: {
-                        [Op.lte]: startTime
-                    },
-                    slotEnd: {
-                        [Op.gte]: startTime
-                    }
+                    [Op.or]: [
+                        {
+                            slotStart: { [Op.lte]: startTime },
+                            slotEnd: { [Op.gte]: startTime }
+                        },
+                        {
+                            slotStart: { [Op.lte]: endTime },
+                            slotEnd: { [Op.gte]: endTime }
+                        }
+                    ]
                 },
                 raw: true
             });
             if (availableSlot.length > 0) {
                 return res.status(400).json({ error_code: 1, message: 'Slot is already exist', availableSlot });
             }
-            // endTime = startTime + slotDuration (hour)
-            const endTime = new Date(startTime);
-            endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
+
 
             const slot = await MentorSlot.create({
                 slotStart: startTime,
@@ -123,7 +127,7 @@ class ScheduleController {
     async updateMentorSlot(req, res) {
         try {
             const { slotId, slotStart, mentorId, description } = req.body;
-            if (!slotId || !slotStart|| !mentorId) {
+            if (!slotId || !slotStart || !mentorId) {
                 return res.status(400).json({ error_code: 1, message: 'Missing required fields' });
             }
 
@@ -152,7 +156,7 @@ class ScheduleController {
             // endTime = startTime + slotDuration (hour)
             endTime.setHours(endTime.getHours() + Math.round(semester.slotDuration / 60));
 
-             // check slotStart is contained between slotStart and slotEnd of any slot of mentor
+            // check slotStart is contained between slotStart and slotEnd of any slot of mentor
             const availableSlot = await MentorSlot.findAll({
                 where: {
                     mentorId,
@@ -196,9 +200,9 @@ class ScheduleController {
                 raw: true
             });
             if (slotUpdate[0] >= 1)
-                return res.status(200).json({ error_code: 0, message: "Slot updated successfully"});
+                return res.status(200).json({ error_code: 0, message: "Slot updated successfully" });
             else
-                return res.status(200).json({ error_code: 0, message: 'Everything is up to date'});
+                return res.status(200).json({ error_code: 0, message: 'Everything is up to date' });
         } catch (error) {
             return res.status(500).json({ error_code: 5, message: 'Internal server error', error: error.message });
         }
