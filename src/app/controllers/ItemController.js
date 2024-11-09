@@ -73,7 +73,7 @@ class ItemController {
       if (!item) {
         return res.json({ error_code: 1, message: "Item not found." });
       }
-      await item.destroy();
+      await item.update({ status: 0 });
       return res.status(200).json({ error_code: 0, message: "Item deleted successfully" });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
