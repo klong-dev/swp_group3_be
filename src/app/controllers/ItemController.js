@@ -69,7 +69,7 @@ class ItemController {
     try {
       const { id } = req.body;
 
-      const item = await Item.findByPk({where: { id, status: 1 }});
+      const item = await Item.findOne({where: { id, status: 1 }});
       if (!item) {
         return res.json({ error_code: 1, message: "Item not found." });
       }
