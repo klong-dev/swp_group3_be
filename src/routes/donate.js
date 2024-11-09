@@ -5,5 +5,5 @@ const router = express.Router();
 
 router.get('/:type/:id', Auth, DonateController.getDonate);
 router.get('/total-donation', DonateController.getTotalDonationForMentor)
-router.get('/checkout', Auth, DonateController.checkOut);
+router.get('/checkout', DonateController.checkOut);
 module.exports = router;

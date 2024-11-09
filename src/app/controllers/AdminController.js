@@ -9,6 +9,7 @@ const { Op, where } = require('sequelize');
 const Complaint = require('../models/Complaint')
 const NotificationUtils = require('../../utils/NotificationUtils')
 const Donate = require('../models/Donate')
+const Item = require('../models/Item')
 
 class AdminController {
   async validAdmin(req, res) {
@@ -522,11 +523,11 @@ class AdminController {
     }
   }
 
-  async listCheckOutOrder(req, res) {
+  async listCheckOut(req, res) {
     const checkOutOrders = await Donate.findAll({
       where: {
         status: 2
-      }
+      },
     });
 
     const mentorIdList = [];
@@ -535,14 +536,95 @@ class AdminController {
         mentorIdList.push(order.mentorId);
       }
     });
+
+    const checkOutList = await Mentor.findAll({
+      where: {
+        accountId: mentorIdList
+      },
+      include: {
+        model: Donate,
+        as: 'donates',
+        where: {
+          status: 2
+        },
+        attributes: ['id', 'status'],
+        include: {
+          model: Item,
+          as: 'item',
+          attributes: ['name', 'price', 'imgPath']
+        }
+      }
+    });
+
+    return res.json({ error_code: 0, checkOutList });
   }
 
   async confirmCheckOut(req, res) {
+    const { mentorId } = req.params;
+    if (!mentorId) {
+      return res.json({ error_code: 1, message: 'Mentor ID is required' });
+    }
+    const checkOutOrder = await Donate.findAll({
+      where: {
+        mentorId,
+        status: 2,
+      },
+      include: {
+        model: Item,
+        as: 'item',
+        attributes: ['price']
+      }
+    });
 
+    if (!checkOutOrder) {
+      return res.json({ error_code: 1, message: 'Check out order not found' });
+    }
+
+    await Donate.update(
+      { status: 0 },
+      {
+        where: {
+          mentorId,
+          status: 2
+        }
+      }
+    );
+
+    return res.json({ error_code: 0, message: 'Check out order confirmed' });
   }
 
   async rejectCheckOut(req, res) {
+    const { mentorId } = req.params;
+    if (!mentorId) {
+      return res.json({ error_code: 1, message: 'Mentor ID is required' });
+    }
+    const checkOutOrder = await Donate.findAll({
+      where: {
+        mentorId,
+        status: 2,
+      },
+      include: {
+        model: Item,
+        as: 'item',
+        attributes: ['price']
+      }
+    });
 
+    if (!checkOutOrder) {
+      return res.json({ error_code: 1, message: 'Check out order not found' });
+    }
+
+    await Donate.update(
+      { status: 1 },
+      {
+        where: {
+          mentorId,
+          status: 2
+        }
+      }
+    );
+
+    return res.json({ error_code: 0, message: 'Check out order rejected' });
   }
 }
 
