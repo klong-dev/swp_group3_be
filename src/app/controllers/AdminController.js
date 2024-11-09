@@ -485,11 +485,39 @@ class AdminController {
           }
         );
       }
-      await skill.save()
+      await Skill.update(
+        {status: 0},
+        {
+          where:{id}
+        }
+      )
       return res.json({erro_code: 0, message: 'Deleted successfull'})
     } catch (error) {
       console.error(error);
-      return res.json({ error_code: 5, message: 'Internal server error' });
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  };
+  
+
+  async updateSKill(req, res){
+    try {
+      const {id, name} = req.body;
+      const skill = await Skill.findOne({
+        where:{id}
+      });
+      if(!skill){
+        return res.status(404).json({ error_code: 1, message: 'Skill not found' });
+      }
+      await Skill.update(
+        {name},
+        {
+          where:{id}
+        }
+      )
+      return res.json({error_code: 0, message: 'Update successfull'})
+    } catch (error) {
+      console.error(error);
+      return res.json({ error_code: 1, message: 'Internal server error' });
     }
   }
 }
