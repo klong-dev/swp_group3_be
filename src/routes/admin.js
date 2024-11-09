@@ -4,7 +4,7 @@ const Auth = require('../middleware/AuthenticateJWT')
 const router = express.Router();
 
 router.post('/valid', AdminController.validAdmin);
-router.post('/add-skill', AdminController.addSkill);
+router.post('/add-skill', Auth, AdminController.addSkill);
 router.get('/mentor-list', Auth, AdminController.showMentorList);
 router.get('/student-list', Auth, AdminController.showStudentList);
 router.post('/promote', Auth, AdminController.promoteToMentor);
