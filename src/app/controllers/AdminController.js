@@ -8,6 +8,7 @@ const Skill = require("../models/Skill");
 const { Op, where } = require('sequelize');
 const Complaint = require('../models/Complaint')
 const NotificationUtils = require('../../utils/NotificationUtils')
+const Donate = require('../models/Donate')
 
 class AdminController {
   async validAdmin(req, res) {
@@ -459,16 +460,16 @@ class AdminController {
     }
   }
 
-  async deleteSkill (req, res) {
+  async deleteSkill(req, res) {
     try {
-      const {id} = req.body;
+      const { id } = req.body;
       const skill = await Skill.findOne({
-        where:{
+        where: {
           id,
           status: 1
         }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       const mentorSkills = await MentorSkill.findAll({
@@ -477,48 +478,71 @@ class AdminController {
           status: 1
         }
       });
-      if(mentorSkills){
+      if (mentorSkills) {
         await MentorSkill.update(
-          {status: 0},
+          { status: 0 },
           {
-            where:{skillId: id}
+            where: { skillId: id }
           }
         );
       }
       await Skill.update(
-        {status: 0},
+        { status: 0 },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({erro_code: 0, message: 'Deleted successfull'})
+      return res.json({ erro_code: 0, message: 'Deleted successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
   };
-  
 
-  async updateSKill(req, res){
+
+  async updateSKill(req, res) {
     try {
-      const {id, name} = req.body;
+      const { id, name } = req.body;
       const skill = await Skill.findOne({
-        where:{id}
+        where: { id }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       await Skill.update(
-        {name},
+        { name },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({error_code: 0, message: 'Update successfull'})
+      return res.json({ error_code: 0, message: 'Update successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
+  }
+
+  async listCheckOutOrder(req, res) {
+    const checkOutOrders = await Donate.findAll({
+      where: {
+        status: 2
+      }
+    });
+
+    const mentorIdList = [];
+    checkOutOrders.forEach(order => {
+      if (!mentorIdList.includes(order.mentorId)) {
+        mentorIdList.push(order.mentorId);
+      }
+    });
+  }
+
+  async confirmCheckOut(req, res) {
+
+  }
+
+  async rejectCheckOut(req, res) {
+
   }
 }
 

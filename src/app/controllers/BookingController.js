@@ -7,6 +7,7 @@ const Semester = require("../models/Semester");
 const Mentor = require("../models/Mentor");
 const TransactionHistory = require("../models/TransactionHistory");
 const NotificationUtils = require("../../utils/NotificationUtils");
+const Complaint = require("../models/Complaint");
 
 const response_status = {
     missing_fields: {
@@ -481,12 +482,16 @@ class BookingController {
             // count students
             const countStudents = await Student.count();
 
+            const complaintCount = await Complaint.count();
+
             return res.status(200).json({
-                total: countAll,
-                cancelled: countCancelled,
-                cancelledRate: (countCancelled / countAll * 100).toFixed(3) || 0,
-                starStudent: studentList.length,
-                starStudentRate: (studentList.length / countStudents * 100).toFixed(3) || 0,
+                total: countAll || 0,
+                cancelled: countCancelled || 0,
+                cancelledRate: parseFloat((countCancelled / countAll * 100).toFixed(1)) || 0,
+                complaint: complaintCount || 0,
+                complaintRate: parseFloat((complaintCount / countAll * 100).toFixed(1)) || 0,
+                starStudent: studentList.length || 0,
+                starStudentRate: parseFloat((studentList.length / countStudents * 100).toFixed(1)) || 0,
             });
         } catch (error) {
             res.status(500).json(response_status.internal_server_error(error));
