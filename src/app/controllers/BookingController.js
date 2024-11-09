@@ -446,6 +446,53 @@ class BookingController {
             res.status(400).json(response_status.internal_server_error(error));
         }
     }
+
+    async report(req, res) {
+        try {
+            const bookings = await Booking.findAll();
+            // count all booking
+            const countAll = bookings.length;
+            // count cancelled booking
+            const countCancelled = bookings.filter((booking) => booking.status === 0).length;
+
+            // get all booking that have same mentor
+            const mentorList = [];
+            const bookingIdList = [];
+            bookings.forEach((booking) => {
+                if (!mentorList.includes(booking.mentorId)) {
+                    bookingIdList.push(booking.id);
+                    mentorList.push(booking.mentorId);
+                }
+            });
+
+            const studentGroup = await StudentGroup.findAll({
+                where: {
+                    bookingId: bookingIdList,
+                    role: 1,
+                },
+            });
+            // count all booking that have same student
+            const studentList = [];
+            studentGroup.forEach((group) => {
+                if (!studentList.includes(group.studentId)) {
+                    studentList.push(group.studentId);
+                }
+            });
+            // count students
+            const countStudents = await Student.count();
+
+            return res.status(200).json({
+                total: countAll,
+                cancelled: countCancelled,
+                cancelledRate: (countCancelled / countAll * 100).toFixed(3) || 0,
+                starStudent: studentList.length,
+                starStudentRate: (studentList.length / countStudents * 100).toFixed(3) || 0,
+            });
+        } catch (error) {
+            res.status(500).json(response_status.internal_server_error(error));
+        }
+
+    }
 }
 
 module.exports = new BookingController();
