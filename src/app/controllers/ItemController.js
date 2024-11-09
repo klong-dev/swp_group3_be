@@ -21,7 +21,7 @@ class ItemController {
   // Get all items
   async getAllItems(req, res) {
     try {
-      const items = await Item.findAll();
+      const items = await Item.findAll({where: { status: 1 }});
       if (!items || items.length === 0) {
         return res.json({ error_code: 1, message: "No items found." });
       }
