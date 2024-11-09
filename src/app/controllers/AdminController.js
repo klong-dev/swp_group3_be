@@ -5,7 +5,7 @@ const Admin = require('../models/Admin')
 const MentorSkill = require('../models/MentorSkill')
 const jwt = require('jsonwebtoken');
 const Skill = require("../models/Skill");
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const Complaint = require('../models/Complaint')
 const NotificationUtils = require('../../utils/NotificationUtils')
 
@@ -453,6 +453,40 @@ class AdminController {
         await NotificationUtils.createSystemNotification(complaint.mentorId, 'rejectComplaint')
       }
       return res.json({ error_code: 0, message: 'Complaint status updated successfully', complaint });
+    } catch (error) {
+      console.error(error);
+      return res.json({ error_code: 5, message: 'Internal server error' });
+    }
+  }
+
+  async deleteSkill (req, res) {
+    try {
+      const {id} = req.query;
+      const skill = await Skill.findOne({
+        where:{
+          id,
+          status: 1
+        }
+      });
+      if(!skill){
+        return res.status(404).json({ error_code: 1, message: 'Skill not found' });
+      }
+      const mentorSkills = await MentorSkill.findAll({
+        where: {
+          skillId: id,
+          status: 1
+        }
+      });
+      if(mentorSkills){
+        await MentorSkill.update(
+          {status: 0},
+          {
+            where:{skillId: id}
+          }
+        );
+      }
+      await skill.save()
+      return res.json({erro_code: 0, message: 'Deleted successfull'})
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 5, message: 'Internal server error' });

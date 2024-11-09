@@ -256,7 +256,10 @@ class SearchController {
       const averageRating = calculateAverageRating(feedbacks);
   
       const mentorSkills = await MentorSkill.findAll({
-        where: { mentorId },
+        where: { 
+          mentorId,
+          status: 1
+       },
       });
       const skillIds = mentorSkills.map((skill) => skill.skillId);
       const skills = await Skill.findAll({
@@ -365,7 +368,9 @@ class SearchController {
       const { mentorId } = req.query;
 
       const mentorSkills = await MentorSkill.findAll({
-        where: { mentorId },
+        where: { mentorId,
+          status: 1
+         },
       });
 
       const skillIds = mentorSkills.map((mentorSkill) => mentorSkill.skillId);
@@ -378,7 +383,6 @@ class SearchController {
         acc[skill.id] = skill.name;
         return acc;
       }, {});
-      console.log(skillsMap);
 
       const mentorSkillsWithLevels = mentorSkills.map((mentorSkill) => ({
         skillId: mentorSkill.skillId,
@@ -400,7 +404,10 @@ class SearchController {
       const skillsWithMentorCount = await Promise.all(
         skills.map(async (skill) => {
           const count = await MentorSkill.count({
-            where: { skillId: skill.id },
+            where: { 
+              skillId: skill.id,
+              status: 1
+             },
           });
           return {
             ...skill.toJSON(),
@@ -478,7 +485,6 @@ class SearchController {
   selectTopMentor = async (req, res) => {
     try {
       const mentors = await Mentor.findAll({ where: { status: 1 } });
-      console.log(mentors);
       const mentorRatings = await Promise.all(
         mentors.map(async (mentor) => {
           const feedbacks = await Feedback.findAll({
@@ -509,6 +515,8 @@ class SearchController {
       return res.status(500).json({ error_code: 1, error });
     }
   };
+
+
   
   
 }
