@@ -2,7 +2,6 @@ const Booking = require("../models/Booking");
 const StudentGroup = require("../models/StudentGroup");
 const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
-const createSystemNotification = require('../../utils/NotificationUtils')
 const { formatTime, formatter } = require("../../utils/MentorUtils");
 const NotificationUtils = require("../../utils/NotificationUtils");
 
@@ -19,9 +18,7 @@ class FeedbackController {
         });
       }
       if (rating < 1 || rating > 5) {
-        return res
-          .status(400)
-          .json({ error_code: 1, message: "Rating must be between 1 and 5." });
+        return res.status(400).json({ error_code: 1, message: "Rating must be between 1 and 5." });
       }
 
       // Verify if the student is in a booking with this mentor
@@ -30,7 +27,10 @@ class FeedbackController {
           {
             model: Booking,
             as: "bookings",
-            where: { mentorId: mentorId },
+            where: { 
+              mentorId: mentorId,
+              status: 2
+            },
           },
         ],
         where: { studentId: studentId },
@@ -38,7 +38,7 @@ class FeedbackController {
       if (!validBooking) {
         return res.status(403).json({
           error_code: 1,
-          message: "Student is not in a group booking with this mentor.",
+          message: "Student is not in a group booking with this mentor or the booking is not completed",
         });
       }
 
