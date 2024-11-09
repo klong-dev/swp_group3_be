@@ -461,7 +461,7 @@ class AdminController {
 
   async deleteSkill (req, res) {
     try {
-      const {id} = req.query;
+      const {id} = req.body;
       const skill = await Skill.findOne({
         where:{
           id,
