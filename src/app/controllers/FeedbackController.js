@@ -2,6 +2,7 @@ const Booking = require("../models/Booking");
 const StudentGroup = require("../models/StudentGroup");
 const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
+const { Op } = require("sequelize");
 const { formatTime, formatter } = require("../../utils/MentorUtils");
 const NotificationUtils = require("../../utils/NotificationUtils");
 
