@@ -92,6 +92,45 @@ class FeedbackController {
       });
     }
   };
+
+  checkIfRated = async (req, res) => {
+    try {
+      const { studentId, mentorId } = req.query;
+
+      if (!studentId || !mentorId) {
+        return res.status(400).json({
+          error_code: 1,
+          message: "Please provide both studentId and mentorId.",
+        });
+      }
+      const existingFeedback = await Feedback.findOne({
+        where: {
+          studentId: studentId,
+          mentorId: mentorId,
+        },
+      });
+
+      if (existingFeedback) {
+        return res.status(200).json({
+          error_code: 0,
+          message: "Student has been rated.",
+          rated: true,
+        });
+      } else {
+        return res.status(200).json({
+          error_code: 0,
+          message: "No rating found for this mentor-student pair.",
+          rated: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking feedback:", error);
+      return res.status(500).json({
+        error_code: 1,
+        message: "An error occurred while checking feedback.",
+      });
+    }
+  };
 }
 
 module.exports = new FeedbackController();
