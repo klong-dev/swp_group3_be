@@ -656,6 +656,26 @@ class AdminController {
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
   }
+
+  async editSemesterSlotCost(req, res) {
+    try {
+      const { cost } = req.body;
+      if (!cost) {
+        return res.json({ error_code: 1, message: 'Please provide cost' });
+      }
+      const currentSemester = await Semester.findOne({
+        order: [['createdAt', 'DESC']],
+      });
+      if (!currentSemester) {
+        return res.json({ error_code: 1, message: 'Semester not found' });
+      }
+      await currentSemester.update({ slotCost: cost });
+      return res.json({ error_code: 0, message: 'Semester slot cost updated successfully', semester: currentSemester });
+    }
+    catch (error) {
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = new AdminController()
