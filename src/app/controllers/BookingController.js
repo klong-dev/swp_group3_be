@@ -196,7 +196,7 @@ class BookingController {
             // update slot status to active
             const isNotExistSameSlot = await MentorSlot.findOne({ where: { slotStart: booking.startTime, mentorId: booking.id, status: 0 } });
             if (!isNotExistSameSlot) {
-                MentorSlot.update({ status: 1 }, { where: { slotStart: booking.startTime, mentorId: booking.id, status: 0 } });
+                MentorSlot.update({ status: 1 }, { where: { slotStart: booking.startTime, mentorId: booking.mentorId, status: 0 } });
             }
             // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
             // remove and penalty 50% points
