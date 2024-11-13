@@ -79,9 +79,10 @@ class AdminController {
     }
   }
 
+  // fixing
   async showStudentList(req, res) {
     try {
-      const studentList = await Student.findAll()
+      const studentList = await Student.findAll({ where: { status: 1, isMentor: 0 } });
       return res.json({ error_code: 0, studentList })
     } catch (error) {
       res.status(500).json({ error_code: 1, error })
@@ -407,18 +408,13 @@ class AdminController {
     }
   }
 
+  // fixing
   async getMentorsAndStudentsQuantity(req, res) {
     try {
-      const mentorsCount = await Mentor.count();
-      const studentsCount = await Student.count();
-
-      return res.status(200).json({
-        error_code: 0,
-        data: {
-          mentors: mentorsCount,
-          students: studentsCount,
-        },
-      });
+      const mentorsCount = await Mentor.count({ where: { status: 1 } });
+      const studentsCount = await Student.count({ where: { status: 1, isMentor: 0 } });
+      const data = { mentors: mentorsCount, students: studentsCount }
+      return res.status(200).json({ error_code: 0, data });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
@@ -459,16 +455,16 @@ class AdminController {
     }
   }
 
-  async deleteSkill (req, res) {
+  async deleteSkill(req, res) {
     try {
-      const {id} = req.body;
+      const { id } = req.body;
       const skill = await Skill.findOne({
-        where:{
+        where: {
           id,
           status: 1
         }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       const mentorSkills = await MentorSkill.findAll({
@@ -477,44 +473,44 @@ class AdminController {
           status: 1
         }
       });
-      if(mentorSkills){
+      if (mentorSkills) {
         await MentorSkill.update(
-          {status: 0},
+          { status: 0 },
           {
-            where:{skillId: id}
+            where: { skillId: id }
           }
         );
       }
       await Skill.update(
-        {status: 0},
+        { status: 0 },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({erro_code: 0, message: 'Deleted successfull'})
+      return res.json({ error_code: 0, message: 'Deleted successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
   };
-  
 
-  async updateSKill(req, res){
+
+  async updateSKill(req, res) {
     try {
-      const {id, name} = req.body;
+      const { id, name } = req.body;
       const skill = await Skill.findOne({
-        where:{id}
+        where: { id }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       await Skill.update(
-        {name},
+        { name },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({error_code: 0, message: 'Update successfull'})
+      return res.json({ error_code: 0, message: 'Update successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
