@@ -315,7 +315,6 @@ class BookingController {
                             model: StudentGroup,
                             as: "studentGroups",
                             where: { status: 2, studentId: id },
-                            attributes: ["role"],
                         },
                     ],
                     order: [["startTime", "ASC"]],
