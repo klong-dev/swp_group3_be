@@ -81,9 +81,10 @@ class AdminController {
     }
   }
 
+  // fixing
   async showStudentList(req, res) {
     try {
-      const studentList = await Student.findAll()
+      const studentList = await Student.findAll({ where: { status: 1, isMentor: 0 } });
       return res.json({ error_code: 0, studentList })
     } catch (error) {
       res.status(500).json({ error_code: 1, error })
@@ -409,18 +410,13 @@ class AdminController {
     }
   }
 
+  // fixing
   async getMentorsAndStudentsQuantity(req, res) {
     try {
-      const mentorsCount = await Mentor.count();
-      const studentsCount = await Student.count();
-
-      return res.status(200).json({
-        error_code: 0,
-        data: {
-          mentors: mentorsCount,
-          students: studentsCount,
-        },
-      });
+      const mentorsCount = await Mentor.count({ where: { status: 1 } });
+      const studentsCount = await Student.count({ where: { status: 1, isMentor: 0 } });
+      const data = { mentors: mentorsCount, students: studentsCount }
+      return res.status(200).json({ error_code: 0, data });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
@@ -493,7 +489,7 @@ class AdminController {
           where: { id }
         }
       )
-      return res.json({ erro_code: 0, message: 'Deleted successfull' })
+      return res.json({ error_code: 0, message: 'Deleted successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
