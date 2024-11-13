@@ -45,6 +45,7 @@ class DonateController {
         const donates = await Donate.findAll({
           where: {
             mentorId: id,
+            status: 1,
           },
           include: [
             {
@@ -57,7 +58,9 @@ class DonateController {
             },
           ],
         });
-        return res.status(200).json({ error_code: 0, donates });
+
+        const totalAmount = donates.reduce((total, donate) => total + donate.item.price, 0);
+        return res.status(200).json({ error_code: 0, donates, totalAmount });
       } else if (type === "student") {
         const student = await Student.findByPk(id);
         if (!student) {
@@ -66,6 +69,7 @@ class DonateController {
         const donates = await Donate.findAll({
           where: {
             studentId: id,
+            status: 1,
           },
           include: [
             {

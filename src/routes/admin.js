@@ -37,4 +37,7 @@ router.get('/list-checkout', AdminController.listCheckOut);
 router.get('/confirm-checkout/:mentorId', AdminController.confirmCheckOut);
 router.get('/reject-checkout/:mentorId', AdminController.rejectCheckOut);
 
+router.post('/admin/edit-student-point', Auth, AdminController.editStudentPoint);
+router.post('/admin/edit-mentor-point', Auth, AdminController.editMentorPoint);
+
 module.exports = router

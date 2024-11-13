@@ -626,6 +626,40 @@ class AdminController {
 
     return res.json({ error_code: 0, message: 'Check out order rejected' });
   }
+
+  async editStudentPoint(req, res) {
+    try {
+      const { studentId, point } = req.body;
+      if (!studentId || !point) {
+        return res.json({ error_code: 1, message: 'Please provide studentId and point' });
+      }
+      const student = await Student.findByPk(studentId);
+      if (!student) {
+        return res.json({ error_code: 1, message: 'Student not found' });
+      }
+      await student.update({ point });
+      return res.json({ error_code: 0, message: 'Student point updated successfully', student });
+    } catch (error) {
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  }
+
+  async editMentorPoint(req, res) {
+    try {
+      const { mentorId, point } = req.body;
+      if (!mentorId || !point) {
+        return res.json({ error_code: 1, message: 'Please provide mentorId and point' });
+      }
+      const mentor = await Mentor.findByPk(mentorId);
+      if (!mentor) {
+        return res.json({ error_code: 1, message: 'Mentor not found' });
+      }
+      await mentor.update({ point });
+      return res.json({ error_code: 0, message: 'Mentor point updated successfully', mentor });
+    } catch (error) {
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = new AdminController()
