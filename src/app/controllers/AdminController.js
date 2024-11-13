@@ -8,6 +8,8 @@ const Skill = require("../models/Skill");
 const { Op, where } = require('sequelize');
 const Complaint = require('../models/Complaint')
 const NotificationUtils = require('../../utils/NotificationUtils')
+const Donate = require('../models/Donate')
+const Item = require('../models/Item')
 
 class AdminController {
   async validAdmin(req, res) {
@@ -79,9 +81,10 @@ class AdminController {
     }
   }
 
+  // fixing
   async showStudentList(req, res) {
     try {
-      const studentList = await Student.findAll()
+      const studentList = await Student.findAll({ where: { status: 1, isMentor: 0 } });
       return res.json({ error_code: 0, studentList })
     } catch (error) {
       res.status(500).json({ error_code: 1, error })
@@ -407,18 +410,13 @@ class AdminController {
     }
   }
 
+  // fixing
   async getMentorsAndStudentsQuantity(req, res) {
     try {
-      const mentorsCount = await Mentor.count();
-      const studentsCount = await Student.count();
-
-      return res.status(200).json({
-        error_code: 0,
-        data: {
-          mentors: mentorsCount,
-          students: studentsCount,
-        },
-      });
+      const mentorsCount = await Mentor.count({ where: { status: 1 } });
+      const studentsCount = await Student.count({ where: { status: 1, isMentor: 0 } });
+      const data = { mentors: mentorsCount, students: studentsCount }
+      return res.status(200).json({ error_code: 0, data });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });
     }
@@ -459,16 +457,16 @@ class AdminController {
     }
   }
 
-  async deleteSkill (req, res) {
+  async deleteSkill(req, res) {
     try {
-      const {id} = req.body;
+      const { id } = req.body;
       const skill = await Skill.findOne({
-        where:{
+        where: {
           id,
           status: 1
         }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       const mentorSkills = await MentorSkill.findAll({
@@ -477,46 +475,184 @@ class AdminController {
           status: 1
         }
       });
-      if(mentorSkills){
+      if (mentorSkills) {
         await MentorSkill.update(
-          {status: 0},
+          { status: 0 },
           {
-            where:{skillId: id}
+            where: { skillId: id }
           }
         );
       }
       await Skill.update(
-        {status: 0},
+        { status: 0 },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({erro_code: 0, message: 'Deleted successfull'})
+      return res.json({ error_code: 0, message: 'Deleted successfull' })
     } catch (error) {
       console.error(error);
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
   };
-  
 
-  async updateSKill(req, res){
+
+  async updateSKill(req, res) {
     try {
-      const {id, name} = req.body;
+      const { id, name } = req.body;
       const skill = await Skill.findOne({
-        where:{id}
+        where: { id }
       });
-      if(!skill){
+      if (!skill) {
         return res.status(404).json({ error_code: 1, message: 'Skill not found' });
       }
       await Skill.update(
-        {name},
+        { name },
         {
-          where:{id}
+          where: { id }
         }
       )
-      return res.json({error_code: 0, message: 'Update successfull'})
+      return res.json({ error_code: 0, message: 'Update successfull' })
     } catch (error) {
       console.error(error);
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  }
+
+  async listCheckOut(req, res) {
+    const checkOutOrders = await Donate.findAll({
+      where: {
+        status: 2
+      },
+    });
+
+    const mentorIdList = [];
+    checkOutOrders.forEach(order => {
+      if (!mentorIdList.includes(order.mentorId)) {
+        mentorIdList.push(order.mentorId);
+      }
+    });
+
+    const checkOutList = await Mentor.findAll({
+      where: {
+        accountId: mentorIdList
+      },
+      include: {
+        model: Donate,
+        as: 'donates',
+        where: {
+          status: 2
+        },
+        attributes: ['id', 'status'],
+        include: {
+          model: Item,
+          as: 'item',
+          attributes: ['name', 'price', 'imgPath']
+        }
+      }
+    });
+
+    return res.json({ error_code: 0, checkOutList });
+  }
+
+  async confirmCheckOut(req, res) {
+    const { mentorId } = req.params;
+    if (!mentorId) {
+      return res.json({ error_code: 1, message: 'Mentor ID is required' });
+    }
+    const checkOutOrder = await Donate.findAll({
+      where: {
+        mentorId,
+        status: 2,
+      },
+      include: {
+        model: Item,
+        as: 'item',
+        attributes: ['price']
+      }
+    });
+
+    if (!checkOutOrder) {
+      return res.json({ error_code: 1, message: 'Check out order not found' });
+    }
+
+    await Donate.update(
+      { status: 0 },
+      {
+        where: {
+          mentorId,
+          status: 2
+        }
+      }
+    );
+
+    return res.json({ error_code: 0, message: 'Check out order confirmed' });
+  }
+
+  async rejectCheckOut(req, res) {
+    const { mentorId } = req.params;
+    if (!mentorId) {
+      return res.json({ error_code: 1, message: 'Mentor ID is required' });
+    }
+    const checkOutOrder = await Donate.findAll({
+      where: {
+        mentorId,
+        status: 2,
+      },
+      include: {
+        model: Item,
+        as: 'item',
+        attributes: ['price']
+      }
+    });
+
+    if (!checkOutOrder) {
+      return res.json({ error_code: 1, message: 'Check out order not found' });
+    }
+
+    await Donate.update(
+      { status: 1 },
+      {
+        where: {
+          mentorId,
+          status: 2
+        }
+      }
+    );
+
+    return res.json({ error_code: 0, message: 'Check out order rejected' });
+  }
+
+  async editStudentPoint(req, res) {
+    try {
+      const { studentId, point } = req.body;
+      if (!studentId || !point) {
+        return res.json({ error_code: 1, message: 'Please provide studentId and point' });
+      }
+      const student = await Student.findByPk(studentId);
+      if (!student) {
+        return res.json({ error_code: 1, message: 'Student not found' });
+      }
+      await student.update({ point });
+      return res.json({ error_code: 0, message: 'Student point updated successfully', student });
+    } catch (error) {
+      return res.json({ error_code: 1, message: 'Internal server error' });
+    }
+  }
+
+  async editMentorPoint(req, res) {
+    try {
+      const { mentorId, point } = req.body;
+      if (!mentorId || !point) {
+        return res.json({ error_code: 1, message: 'Please provide mentorId and point' });
+      }
+      const mentor = await Mentor.findByPk(mentorId);
+      if (!mentor) {
+        return res.json({ error_code: 1, message: 'Mentor not found' });
+      }
+      await mentor.update({ point });
+      return res.json({ error_code: 0, message: 'Mentor point updated successfully', mentor });
+    } catch (error) {
       return res.json({ error_code: 1, message: 'Internal server error' });
     }
   }

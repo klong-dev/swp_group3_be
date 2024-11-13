@@ -7,22 +7,18 @@ const { validateCard } = require("../../utils/DonateUtils");
 class DonateController {
   async checkOut(req, res) {
     try {
-      const { mentorId, card_number, card_name, bank_name } = req.query;
-      if (!mentorId || !card_number || !card_name || !bank_name) {
+      const { mentorId } = req.query;
+      if (!mentorId) {
         return res.json({ error_code: 1, message: "All fields must be filled" });
       }
       const mentor = await Mentor.findByPk(mentorId);
       if (!mentor) {
         return res.json({ error_code: 1, message: "Mentor not found" });
       }
-      const cardError = validateCard(card_number, card_name);
-      if (cardError) {
-        return res.status(400).json(cardError);
-      }
-      const donates = await Donate.findAll({ where: { mentorId, status: 1 } });
+      const donates = await Donate.findAll({ where: { mentorId, status: 1 }, include: [{ model: Item, as: "item", attributes: ['price'] }] });
       let totalAmount = 0;
       donates.forEach(async (donate) => {
-        totalAmount += donate.amount;
+        totalAmount += donate.item.price;
         donate.status = 2;
         await donate.save();
       });
@@ -49,6 +45,7 @@ class DonateController {
         const donates = await Donate.findAll({
           where: {
             mentorId: id,
+            status: 1,
           },
           include: [
             {
@@ -61,7 +58,9 @@ class DonateController {
             },
           ],
         });
-        return res.status(200).json({ error_code: 0, donates });
+
+        const totalAmount = donates.reduce((total, donate) => total + donate.item.price, 0);
+        return res.status(200).json({ error_code: 0, donates, totalAmount });
       } else if (type === "student") {
         const student = await Student.findByPk(id);
         if (!student) {
@@ -70,6 +69,7 @@ class DonateController {
         const donates = await Donate.findAll({
           where: {
             studentId: id,
+            status: 1,
           },
           include: [
             {
@@ -97,10 +97,10 @@ class DonateController {
         return res.status(404).json({ error_code: 1, message: "Mentor not found" });
       }
       const donates = await Donate.findAll({
-        where: { 
-            mentorId,
-            status: 1
-         },
+        where: {
+          mentorId,
+          status: 1
+        },
         include: [
           {
             model: Item,

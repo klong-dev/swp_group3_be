@@ -21,7 +21,7 @@ class ItemController {
   // Get all items
   async getAllItems(req, res) {
     try {
-      const items = await Item.findAll();
+      const items = await Item.findAll({where: { status: 1 }});
       if (!items || items.length === 0) {
         return res.json({ error_code: 1, message: "No items found." });
       }
@@ -36,7 +36,7 @@ class ItemController {
     try {
       const { id } = req.params;
 
-      const item = await Item.findByPk(id);
+      const item = await Item.findOne({where: { id, status: 1 }});
       if (!item) {
         return res.json({ error_code: 1, message: "Item not found." });
       }
@@ -52,7 +52,7 @@ class ItemController {
     try {
       const { id, name, price, imgPath, status } = req.body;
 
-      const item = await Item.findByPk(id);
+      const item = await Item.findOne({where: { id, status: 1 }});
       if (!item) {
         return res.json({ error_code: 1, message: "Item not found." });
       }
@@ -69,11 +69,11 @@ class ItemController {
     try {
       const { id } = req.body;
 
-      const item = await Item.findByPk(id);
+      const item = await Item.findOne({where: { id, status: 1 }});
       if (!item) {
         return res.json({ error_code: 1, message: "Item not found." });
       }
-      await item.destroy();
+      await item.update({ status: 0 });
       return res.status(200).json({ error_code: 0, message: "Item deleted successfully" });
     } catch (error) {
       return res.status(500).json({ error_code: 500, error: error.message });

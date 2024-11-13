@@ -1,9 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require('../../config/db/index');
 const sequelize = db.sequelize;
-const Item = require('./Item');
-const Mentor = require('./Mentor');
-const Student = require('./Student');
 
 const Donate = sequelize.define('donate', {
   id: {
@@ -32,8 +29,25 @@ const Donate = sequelize.define('donate', {
   freezeTableName: true
 });
 
-Donate.hasOne(Item, { foreignKey: 'id', sourceKey: 'itemId', as: 'item' });
-Donate.hasOne(Mentor, { foreignKey: 'accountId', sourceKey: 'mentorId', as: 'mentor' });
-Donate.hasOne(Student, { foreignKey: 'accountId', sourceKey: 'studentId', as: 'student' });
-
 module.exports = Donate;
+
+// Import models after defining Donate
+const Item = require('./Item');
+const Mentor = require('./Mentor');
+const Student = require('./Student');
+
+// Set up associations
+Donate.belongsTo(Item, {
+  foreignKey: 'itemId',
+  as: 'item'
+});
+
+Donate.belongsTo(Mentor, {
+  foreignKey: 'mentorId',
+  as: 'mentor'
+});
+
+Donate.belongsTo(Student, {
+  foreignKey: 'studentId',
+  as: 'student'
+});

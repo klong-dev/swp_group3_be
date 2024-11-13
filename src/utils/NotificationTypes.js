@@ -71,7 +71,15 @@ const notifications = {
   applyToBeMentor: {
     title: 'Notification',
     message: 'Your mentor application has been sent successfully'
-  }
+  },
+  gotInvite: {
+    title: 'Notification',
+    message: 'You have received an invitation to join the group'
+  },
+  confirmInvite: {
+    title: 'Notification',
+    message: 'Your invitation has been confirmed'
+  },
 }
 
 module.exports = notifications;
