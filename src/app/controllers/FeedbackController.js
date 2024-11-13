@@ -29,7 +29,8 @@ class FeedbackController {
             as: "bookings",
             where: { 
               mentorId: mentorId,
-              status: 2
+              status: 1,
+              endTime: { [Op.lt]: new Date() }
             },
           },
         ],
@@ -38,7 +39,7 @@ class FeedbackController {
       if (!validBooking) {
         return res.status(403).json({
           error_code: 1,
-          message: "Student is not in a group booking with this mentor or the booking is not completed",
+          message: "Student has not booked with this mentor or the booking is not yet valid for rating",
         });
       }
 
