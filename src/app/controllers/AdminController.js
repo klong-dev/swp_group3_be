@@ -629,11 +629,11 @@ class AdminController {
 
   async editStudentPoint(req, res) {
     try {
-      const { studentId, point } = req.body;
-      if (!studentId || !point) {
+      const { id, point } = req.body;
+      if (!id || !point) {
         return res.json({ error_code: 1, message: 'Please provide studentId and point' });
       }
-      const student = await Student.findByPk(studentId);
+      const student = await Student.findByPk(id);
       if (!student) {
         return res.json({ error_code: 1, message: 'Student not found' });
       }
@@ -646,11 +646,11 @@ class AdminController {
 
   async editMentorPoint(req, res) {
     try {
-      const { mentorId, point } = req.body;
-      if (!mentorId || !point) {
+      const { id, point } = req.body;
+      if (!id || !point) {
         return res.json({ error_code: 1, message: 'Please provide mentorId and point' });
       }
-      const mentor = await Mentor.findByPk(mentorId);
+      const mentor = await Mentor.findByPk(id);
       if (!mentor) {
         return res.json({ error_code: 1, message: 'Mentor not found' });
       }
