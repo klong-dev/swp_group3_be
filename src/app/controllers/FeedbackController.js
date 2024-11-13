@@ -95,7 +95,7 @@ class FeedbackController {
 
   checkIfRated = async (req, res) => {
     try {
-      const { studentId, mentorId } = req.query;
+      const { studentId, mentorId } = req.body;
 
       if (!studentId || !mentorId) {
         return res.status(400).json({
