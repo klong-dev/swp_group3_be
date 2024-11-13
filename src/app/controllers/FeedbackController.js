@@ -3,7 +3,7 @@ const StudentGroup = require("../models/StudentGroup");
 const Feedback = require("../models/Feedback");
 const Student = require("../models/Student");
 const { Op } = require("sequelize");
-const { formatTime, formatter } = require("../../utils/MentorUtils");
+const { formatTime, formatter, DateTimeFormat } = require("../../utils/MentorUtils");
 const NotificationUtils = require("../../utils/NotificationUtils");
 
 class FeedbackController {
@@ -23,19 +23,22 @@ class FeedbackController {
       }
 
       // Verify if the student is in a booking with this mentor
+      // const time = DateTimeFormat(new Date());
+      // console.log(time);
+      
       const validBooking = await StudentGroup.findOne({
         include: [
           {
             model: Booking,
             as: "bookings",
             where: { 
-              mentorId: mentorId,
+              mentorId: mentorId, 
               status: 1,
-              endTime: { [Op.lt]: new Date() }
+              endTime: { [Op.gt]: DateTimeFormat(new Date()) }
             },
           },
         ],
-        where: { studentId: studentId },
+        where: { studentId },
       });
       if (!validBooking) {
         return res.status(403).json({
