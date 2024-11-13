@@ -22,7 +22,14 @@ class NotificationController {
         where: { accountId, status: 1 },
         order: [['createdAt', 'DESC']]
       });
-      return res.status(200).json({ error_code: 0, notifications });
+      const formattedNotifications = notifications.map(notification => {
+        return {
+          ...notification.toJSON(),
+          createdAt: moment(notification.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+          updatedAt: moment(notification.updatedAt).format('YYYY-MM-DD HH:mm:ss')
+        };
+      });
+      return res.status(200).json({ error_code: 0, formattedNotifications });
     } catch (error) {
       return res.status(500).json({ error_code: 2, message: error.message });
     }
