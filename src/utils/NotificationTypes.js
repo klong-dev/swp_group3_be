@@ -80,6 +80,14 @@ const notifications = {
     title: 'Notification',
     message: 'Your invitation has been confirmed'
   },
+  checkoutSuccess: {
+    title: 'Notification',
+    message: 'Your payment has been confirmed'
+  },
+  checkoutFail: {
+    title: 'Notification',
+    message: 'Your payment has been failed'
+  },
 }
 
 module.exports = notifications;

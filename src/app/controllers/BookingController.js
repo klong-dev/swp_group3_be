@@ -8,6 +8,7 @@ const Mentor = require("../models/Mentor");
 const TransactionHistory = require("../models/TransactionHistory");
 const NotificationUtils = require("../../utils/NotificationUtils");
 const Complaint = require("../models/Complaint");
+const Feedback = require("../models/Feedback");
 
 const response_status = {
     missing_fields: {
@@ -121,7 +122,7 @@ class BookingController {
             // ================ BOOKING =============== //
             // minus student point by semester default point
             Student.update({ point: student.point - semester.slotCost }, { where: { accountId: bookingData.studentId } });
-            Mentor.update({ point: mentor.point + semester.slotCost }, { where: { accountId: bookingData.mentorId } });
+            Mentor.increment("point", { by: semester.slotCost, where: { accountId: bookingData.mentorId } });
             // update slot status to inactive
             MentorSlot.update({ status: 0 }, { where: { id: bookingData.slotId } });
 
@@ -196,7 +197,7 @@ class BookingController {
             // update slot status to active
             const isNotExistSameSlot = await MentorSlot.findOne({ where: { slotStart: booking.startTime, mentorId: booking.id, status: 0 } });
             if (!isNotExistSameSlot) {
-                MentorSlot.update({ status: 1 }, { where: { slotStart: booking.startTime, mentorId: booking.id, status: 0 } });
+                MentorSlot.update({ status: 1 }, { where: { slotStart: booking.startTime, mentorId: booking.mentorId, status: 0 } });
             }
             // StudentGroup.update({ status: 0 }, { where: { bookingId: booking.id } });
             // remove and penalty 50% points
@@ -283,6 +284,7 @@ class BookingController {
                         {
                             model: StudentGroup,
                             as: "studentGroups",
+                            where: { status: 2 },
                             include: [
                                 {
                                     model: Student,
@@ -319,6 +321,11 @@ class BookingController {
                     ],
                     order: [["startTime", "ASC"]],
                 });
+
+                for (const booking of bookings) {
+                    const feedback = await Feedback.findOne({ where: { mentorId: booking.mentorId, studentId: id } });
+                    booking.dataValues.isFeedback = !!feedback;
+                }
                 res.status(200).json(response_status.list_success(bookings));
             }
         } catch (error) {

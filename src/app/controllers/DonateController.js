@@ -57,6 +57,7 @@ class DonateController {
               as: "item",
             },
           ],
+          order: [["createdAt", "DESC"]],
         });
 
         const totalAmount = donates.reduce((total, donate) => total + donate.item.price, 0);

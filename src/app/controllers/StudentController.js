@@ -25,6 +25,9 @@ class StudentController {
         validUser = await Mentor.findOne({ where: { accountId } })
       } else {
         validUser = await Student.findOne({ where: { accountId } })
+        if (validUser.isMentor === 1) {
+          validUser = await Mentor.findOne({ where: { accountId } })
+        }
       }
 
       if (!validUser) {
@@ -60,22 +63,55 @@ class StudentController {
 
       const existingMentorAccount = await Mentor.findOne({ where: { accountId, status: 0 } })
       if (existingMentorAccount) {
-        applyingMentor = await existingMentorAccount.update({ accountId, fullName, email, imgPath, point: 0, status: 2, })
-      } else{
+        applyingMentor = await existingMentorAccount.update({
+          accountId,
+          fullName,
+          email,
+          imgPath,
+          point: 0,
+          status: 2,
+        });
+
+        mentorSkills = await Promise.all(
+          skills.map(async (skill) => {
+            const { skillId, level } = skill;
+            const [mentorSkill, created] = await MentorSkill.findOrCreate({
+              where: {
+                skillId,
+                mentorId: applyingMentor.accountId,
+              },
+              defaults: {
+                level: level || 1,
+                status: 1,
+              },
+            });
+
+            if (!created) {
+              // If the skill already exists, you can update it if needed
+              await mentorSkill.update({
+                level: level || mentorSkill.level,
+                status: 1,
+              });
+            }
+
+            return mentorSkill;
+          })
+        );
+      } else {
         applyingMentor = await Mentor.create({ accountId, fullName, email, imgPath, point: 0, status: 2, }); // pending
         mentorSkills = await Promise.all(
-        skills.map(async (skill) => {
-          const { skillId, level } = skill;
-          return await MentorSkill.create({
-            skillId,
-            mentorId: applyingMentor.accountId,
-            level: level || 1,
-            status: 1,
-          });
-        })
-      );
+          skills.map(async (skill) => {
+            const { skillId, level } = skill;
+            return await MentorSkill.create({
+              skillId,
+              mentorId: applyingMentor.accountId,
+              level: level || 1,
+              status: 1,
+            });
+          })
+        );
       }
-      
+
       await NotificationUtils.createSystemNotification(student.accountId, 'applyToBeMentor')
       return res.status(201).json({ error_code: 0, applyingMentor, mentorSkills });
     } catch (error) {
@@ -92,7 +128,7 @@ class StudentController {
         include: {
           model: Skill,
           attributes: ['name'],
-          through: { attributes: [] },
+          through: { attributes: ['level'] },
         },
       });
       if (!applyingMentors || applyingMentors.length === 0) {

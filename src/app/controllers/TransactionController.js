@@ -30,7 +30,8 @@ class TransactionController {
                             },
                         },
                     ],
-                }
+                },
+                order: [['createdAt', 'DESC']],
             });
             return res.status(200).json(transaction);
         } catch (error) {

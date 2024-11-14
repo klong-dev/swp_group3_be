@@ -14,6 +14,7 @@ const transactions = require('./transaction')
 const donate = require('./donate')
 const notification = require('./notification')
 const complaint = require('./complaint')
+const checkout = require('./checkout')
 function routes(app) {
   app.use('/auth/google', google);
   app.use('/auth/google/callback', google);
@@ -29,6 +30,7 @@ function routes(app) {
   app.use('/item', item)
   app.use('/vnpay', vnpay)
   app.use('/transaction', transactions)
+  app.use('/checkout', checkout)
   app.use('/donate', donate)
   app.use('/notification', notification)
   app.use('/complaint', complaint)
