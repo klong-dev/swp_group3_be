@@ -10,7 +10,9 @@ const Complaint = require('../models/Complaint')
 const NotificationUtils = require('../../utils/NotificationUtils')
 const Donate = require('../models/Donate')
 const Item = require('../models/Item')
-
+const TransactionHistory = require("../models/TransactionHistory");
+const Booking = require("../models/Booking");
+const CheckOutHistory = require('../models/CheckOutHistory')
 class AdminController {
   async validAdmin(req, res) {
     try {
@@ -173,6 +175,8 @@ class AdminController {
         slotDuration: currentDuration,
         status: 1
       })
+      await Mentor.update({ point: 0 }, { where: {} });
+      await Student.update({ point: currentPoint }, { where: {} });
       res.status(200).json({ error_code: 0, newSemester })
     } catch (error) {
       return res.status(500).json({ error_code: 1, error });
@@ -444,6 +448,37 @@ class AdminController {
       }
       await complaint.update({ status });
       if (status === 1) {
+        const semester = await Semester.findOne({ order: [["id", "DESC"]], where: { status: 1 } });
+        await Mentor.decrement("point", { by: semester.slotCost + semester.slotCost / 2, where: { accountId: complaint.mentorId } });
+        await Student.increment("point", { by: semester.slotCost, where: { accountId: complaint.studentId } });
+        const studentGroup = await StudentGroup.findOne({
+          where: {
+            studentId: complaint.studentId,
+          },
+          include: {
+            model: Booking,
+            as: 'bookings',
+            where: {
+              mentorId: complaint.mentorId,
+            },
+            attributes: ['id'],
+          },
+        });
+        const bookingId = studentGroup.bookings.id;
+        TransactionHistory.create({
+          bookingId,
+          accountId: complaint.studentId,
+          point: semester.slotCost,
+          type: 0,
+          description: "Book mentor slot",
+        });
+        TransactionHistory.create({
+          bookingId,
+          accountId: complaint.mentorId,
+          point: semester.slotCost,
+          type: 1,
+          description: "Book mentor slot",
+        });
         await NotificationUtils.createSystemNotification(complaint.studentId, 'resolveComplaint')
         await NotificationUtils.createSystemNotification(complaint.mentorId, 'resolveComplaint')
       } else {
@@ -586,6 +621,13 @@ class AdminController {
       }
     );
 
+    await CheckOutHistory.create({
+      accountId: mentorId,
+      amount: checkOutOrder.reduce((acc, curr) => acc + curr.item.price, 0),
+      status: 1
+    });
+
+    await NotificationUtils.createSystemNotification(mentorId, 'checkoutSuccess')
     return res.json({ error_code: 0, message: 'Check out order confirmed' });
   }
 
@@ -620,6 +662,7 @@ class AdminController {
       }
     );
 
+    await NotificationUtils.createSystemNotification(mentorId, 'checkoutFail')
     return res.json({ error_code: 0, message: 'Check out order rejected' });
   }
 

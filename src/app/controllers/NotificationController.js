@@ -1,4 +1,5 @@
 const Notification = require('../models/Notification');
+const moment = require('moment');
 
 class NotificationController {
   async create(req, res) {
@@ -29,7 +30,7 @@ class NotificationController {
           updatedAt: moment(notification.updatedAt).format('YYYY-MM-DD HH:mm:ss')
         };
       });
-      return res.status(200).json({ error_code: 0, formattedNotifications });
+      return res.status(200).json({ error_code: 0, notifications: formattedNotifications });
     } catch (error) {
       return res.status(500).json({ error_code: 2, message: error.message });
     }

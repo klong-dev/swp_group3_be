@@ -169,7 +169,7 @@ class StudentGroupController {
       return res.status(500).json({ error_code: 5, message: "Internal Server Error", error: error.message });
     }
   }
-  
+
   // async removeStudentById(req, res) {
   //     try {
   //         const studentGroup = await StudentGroup.findOne({ where: { id: req.params.id } });
@@ -203,7 +203,7 @@ class StudentGroupController {
       }
       const mentor = booking.mentor;
       const studentGroup = await StudentGroup.findAll({
-        where: { bookingId: bookingId },
+        where: { bookingId: bookingId, status: 2 },
         include: [
           {
             model: Student,
@@ -242,7 +242,7 @@ class StudentGroupController {
                 include: [
                   {
                     model: Skill,
-                    as: "skills", 
+                    as: "skills",
                     attributes: ["name"],
                     through: {
                       model: MentorSkill,
@@ -259,7 +259,7 @@ class StudentGroupController {
           }
         ],
       });
-  
+
       return res.status(200).json({
         error_code: 0,
         pendingGroup,

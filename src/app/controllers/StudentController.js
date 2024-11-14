@@ -25,6 +25,9 @@ class StudentController {
         validUser = await Mentor.findOne({ where: { accountId } })
       } else {
         validUser = await Student.findOne({ where: { accountId } })
+        if (validUser.isMentor === 1) {
+          validUser = await Mentor.findOne({ where: { accountId } })
+        }
       }
 
       if (!validUser) {
@@ -125,7 +128,7 @@ class StudentController {
         include: {
           model: Skill,
           attributes: ['name'],
-          through: { attributes: [] },
+          through: { attributes: ['level'] },
         },
       });
       if (!applyingMentors || applyingMentors.length === 0) {
